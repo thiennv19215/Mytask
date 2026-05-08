@@ -1,0 +1,157 @@
+.pageBody {
+  margin: 0 auto;
+  max-width: 960px;
+}
+
+.pageHeader {
+  margin-bottom: 38px;
+}
+
+.eyebrow {
+  color: #8a9ab4;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0 0 14px;
+}
+
+.pageTitleRow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.pageTitleRow h1 {
+  font: 800 44px/1.1 Manrope, sans-serif;
+  margin: 0;
+}
+
+.pageHeader > p:last-child {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.7;
+  margin: 18px 0 0;
+  max-width: 760px;
+}
+
+.statusPill {
+  align-items: center;
+  background: #eef0ff;
+  border: 1px solid rgba(91, 92, 246, 0.12);
+  border-radius: 999px;
+  color: #6366f1;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.developmentPanel,
+.previewCard {
+  background: var(--surface);
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 18px;
+}
+
+.developmentPanel {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 28px;
+  padding: 44px 36px;
+  text-align: center;
+}
+
+.developmentIcon {
+  align-items: center;
+  background: #eef0ff;
+  border-radius: 14px;
+  color: #6366f1;
+  display: grid;
+  height: 46px;
+  place-items: center;
+  width: 46px;
+}
+
+.developmentPanel h2 {
+  font: 800 28px/1.2 Manrope, sans-serif;
+  margin: 18px 0 10px;
+}
+
+.developmentPanel p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0 0 24px;
+  max-width: 600px;
+}
+
+.disabledButton {
+  align-items: center;
+  background: var(--surface-muted);
+  border: 0;
+  border-radius: 16px;
+  color: var(--muted-strong);
+  display: inline-flex;
+  font-weight: 800;
+  gap: 10px;
+  height: 52px;
+  justify-content: center;
+  padding: 0 24px;
+}
+
+.previewGrid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.previewCard {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  min-height: 150px;
+  padding: 24px;
+}
+
+.previewCard h3 {
+  font: 800 18px/1.3 Manrope, sans-serif;
+  margin: 0 0 8px;
+}
+
+.previewCard p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.previewCard span {
+  background: var(--surface-soft);
+  border-radius: 999px;
+  color: var(--muted);
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 7px 10px;
+}
+
+@media (max-width: 760px) {
+  .pageTitleRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .previewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .previewCard {
+    display: block;
+  }
+
+  .previewCard span {
+    display: inline-block;
+    margin-top: 18px;
+  }
+}
