@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AppsIcon } from "../../../components/apps-icons";
 import { createImageJob, createVideoJob } from "@/features/generation/generation-api";
+import { useHydrateGenerationHistory } from "@/features/generation/generation-history";
 import { isGenerationActive } from "@/features/generation/generation-status";
 import { upsertGenerationJob, useGenerationJobs } from "@/features/generation/generation-store";
 import type { GenerationJob } from "@/features/generation/generation-types";
@@ -174,6 +175,8 @@ function wait(ms: number) {
 }
 
 export function ScriptAnalyzerMainBody() {
+  useHydrateGenerationHistory();
+
   const [scriptDraft, setScriptDraft] = useState("");
   const [scriptErrorMessage, setScriptErrorMessage] = useState("");
   const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
