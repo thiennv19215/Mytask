@@ -1,17 +1,25 @@
 .storyboardPage {
   background: var(--surface-soft);
   display: grid;
-  gap: 14px;
+  gap: 12px;
   margin: -58px -52px -72px;
   min-height: calc(100vh - var(--app-top-nav-height, 78px));
-  padding: 22px;
+  padding: 16px;
 }
 
 .storyboardModal {
   background: #ffffff;
   border: 1px solid rgba(0, 27, 68, 0.08);
-  border-radius: 18px;
-  box-shadow: 0 16px 38px rgba(0, 27, 68, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 27, 68, 0.05);
+  display: grid;
+  gap: 10px;
+  grid-template-rows: auto 1fr;
+  max-width: 1760px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 10px;
+  width: min(100%, 1760px);
 }
 
 .eyebrow {
@@ -25,7 +33,7 @@
 .rowActions,
 .videoActions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 
 .primaryButton,
@@ -33,14 +41,14 @@
 .iconButton {
   align-items: center;
   border: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   display: inline-flex;
   font: 900 13px/1 Inter, sans-serif;
-  gap: 8px;
+  gap: 6px;
   justify-content: center;
   min-height: 40px;
-  padding: 0 14px;
+  padding: 0 12px;
   white-space: nowrap;
 }
 
@@ -87,11 +95,11 @@
 .videoResultsPanel {
   background: #f8fafc;
   border: 1px solid rgba(0, 27, 68, 0.08);
-  border-radius: 14px;
+  border-radius: 12px;
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  padding: 12px;
+  padding: 10px;
 }
 
 .videoResultsHeader {
@@ -102,7 +110,7 @@
 
 .videoResultsHeader h3 {
   color: var(--navy);
-  font: 900 18px/1.2 Manrope, sans-serif;
+  font: 900 16px/1.2 Manrope, sans-serif;
   margin: 0;
 }
 
@@ -174,33 +182,23 @@
 }
 
 .modalBackdrop {
-  align-items: stretch;
+  align-items: center;
   background: rgba(15, 23, 42, 0.52);
   display: flex;
   inset: 0;
   justify-content: center;
-  padding: 10px;
+  padding: 18px;
   position: fixed;
   z-index: 50;
-}
-
-.storyboardModal {
-  display: grid;
-  gap: 12px;
-  grid-template-rows: auto 1fr;
-  max-height: none;
-  max-width: 1760px;
-  overflow: visible;
-  padding: 12px;
-  width: min(100%, 1760px);
 }
 
 .storyboardHeader {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .rowActions small,
@@ -214,25 +212,25 @@
   gap: 10px;
   min-width: 0;
   overflow-x: auto;
-  padding: 2px 2px 18px;
+  padding: 1px 1px 12px;
 }
 
 .storyboardRows {
   display: grid;
-  gap: 12px;
-  min-width: 720px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .emptyStoryboard {
   align-items: center;
   background: #f8fafc;
   border: 1px dashed rgba(0, 27, 68, 0.16);
-  border-radius: 16px;
+  border-radius: 14px;
   display: grid;
-  gap: 18px;
+  gap: 14px;
   justify-items: center;
-  min-height: 430px;
-  padding: 36px 24px;
+  min-height: 360px;
+  padding: 28px 20px;
   text-align: center;
 }
 
@@ -254,7 +252,7 @@
 
 .emptyStoryboard h2 {
   color: var(--navy);
-  font: 900 28px/1.1 Manrope, sans-serif;
+  font: 900 24px/1.1 Manrope, sans-serif;
   margin: 0;
 }
 
@@ -276,10 +274,11 @@
 .storyboardRow {
   background: #ffffff;
   border: 1px solid rgba(0, 27, 68, 0.08);
-  border-radius: 12px;
+  border-radius: 10px;
   display: grid;
   gap: 8px;
   box-shadow: none;
+  min-width: 0;
   padding: 8px;
 }
 
@@ -296,15 +295,20 @@
 .sceneStripHeader {
   align-items: center;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: space-between;
   min-width: 0;
 }
 
 .sceneBlocks {
   display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  align-items: stretch;
+  gap: 8px;
+  grid-template-columns:
+    minmax(170px, 0.92fr)
+    minmax(180px, 1fr)
+    minmax(170px, 0.92fr)
+    minmax(180px, 1fr);
   min-width: 0;
 }
 
@@ -317,7 +321,7 @@
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -329,9 +333,9 @@
   color: var(--navy);
   display: inline-flex;
   font: 900 11px/1 Inter, sans-serif;
-  height: 24px;
+  height: 22px;
   justify-content: center;
-  width: 32px;
+  width: 30px;
 }
 
 .sceneCell span,
@@ -339,11 +343,11 @@
 .sceneCell small {
   border-radius: 999px;
   display: inline-flex;
-  font: 900 9px/1 Inter, sans-serif;
+  font: 900 10px/1 Inter, sans-serif;
   justify-self: start;
-  max-width: 36px;
+  max-width: 72px;
   overflow: hidden;
-  padding: 4px 5px;
+  padding: 4px 6px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -362,31 +366,31 @@
 .sceneCell small {
   background: #f8fafc;
   color: #64748b;
-  max-width: 120px;
+  max-width: min(220px, 46vw);
 }
 
 .promptCell {
   align-content: start;
   background: #fbfcff;
   border: 1px solid rgba(0, 27, 68, 0.06);
-  border-radius: 12px;
+  border-radius: 10px;
   display: grid;
-  gap: 7px;
+  gap: 6px;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   min-height: 0;
   overflow: hidden;
-  padding: 8px;
+  padding: 7px;
 }
 
 .resultBlock {
   background: #fbfcff;
   border: 1px solid rgba(0, 27, 68, 0.06);
-  border-radius: 12px;
+  border-radius: 10px;
   display: grid;
-  gap: 7px;
+  gap: 6px;
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
-  padding: 8px;
+  padding: 7px;
 }
 
 .blockTitle {
@@ -399,11 +403,11 @@
   border: 0;
   border-radius: 8px;
   color: var(--navy);
-  font: 800 13px/1.5 Inter, sans-serif;
+  font: 800 12px/1.45 Inter, sans-serif;
   height: 100%;
   min-height: 0;
   outline: 0;
-  padding: 4px 2px;
+  padding: 3px 2px;
   resize: none;
   width: 100%;
 }
@@ -417,29 +421,22 @@
   font: 900 12px/1.35 Inter, sans-serif;
 }
 
-.storyboardRow .mediaCell {
-  aspect-ratio: 9 / 16;
-  height: auto;
-  min-height: 0;
-}
-
 .storyboardRow .promptCell,
-.storyboardRow .resultBlock,
-.storyboardRow .mediaCell {
-  aspect-ratio: 9 / 16;
+.storyboardRow .resultBlock {
+  min-height: clamp(260px, 28vw, 390px);
   width: 100%;
 }
 
 .storyboardRow .resultBlock .mediaCell {
   aspect-ratio: auto;
-  height: 100%;
+  height: clamp(220px, 24vw, 350px);
 }
 
 .storyboardRow .rowActions {
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   justify-content: flex-end;
   margin-left: 0;
 }
@@ -447,26 +444,27 @@
 .storyboardRow .rowActions button {
   border-radius: 10px;
   font-size: 11px;
-  min-height: 34px;
-  padding-inline: 7px;
+  min-height: 32px;
+  padding-inline: 8px;
   width: auto;
 }
 
 .storyboardRow .rowActions .iconButton {
   justify-self: end;
-  width: 40px;
+  width: 34px;
 }
 
 .scriptModal {
-  align-self: center;
   background: #ffffff;
   border: 1px solid rgba(0, 27, 68, 0.08);
-  border-radius: 18px;
+  border-radius: 16px;
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
   display: grid;
-  gap: 14px;
+  gap: 12px;
+  max-height: calc(100vh - 36px);
   max-width: 720px;
-  padding: 18px;
+  overflow: auto;
+  padding: 16px;
   width: min(100%, 720px);
 }
 
@@ -480,7 +478,7 @@
 
 .scriptModalHeader h2 {
   color: var(--navy);
-  font: 900 24px/1.1 Manrope, sans-serif;
+  font: 900 22px/1.1 Manrope, sans-serif;
   margin: 0;
 }
 
@@ -497,13 +495,14 @@
 .scriptModalField textarea {
   background: #f8fafc;
   border: 1px solid rgba(0, 27, 68, 0.08);
-  border-radius: 14px;
+  border-radius: 12px;
   color: var(--navy);
   font: 700 13px/1.5 Inter, sans-serif;
-  min-height: 260px;
+  min-height: min(48vh, 360px);
   outline: 0;
   padding: 12px;
   resize: vertical;
+  width: 100%;
 }
 
 .scriptModalField textarea:focus {
@@ -514,7 +513,7 @@
 .scriptError {
   background: #fee2e2;
   border: 1px solid rgba(185, 28, 28, 0.18);
-  border-radius: 12px;
+  border-radius: 10px;
   color: #b91c1c;
   font: 900 12px/1.35 Inter, sans-serif;
   margin: 0;
@@ -627,7 +626,7 @@
   aspect-ratio: 1 / 1;
   background: linear-gradient(135deg, #f8fafc, #eef0ff 52%, #e8fff4);
   border: 1px solid rgba(0, 27, 68, 0.08);
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   height: 100%;
   justify-content: center;
@@ -735,31 +734,106 @@
   }
 
   .sceneBlocks {
-    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
   }
 }
 
 @media (max-width: 760px) {
   .storyboardPage {
     margin: -44px -20px -72px;
-    padding: 12px;
+    padding: 10px;
   }
 
   .modalBackdrop {
-    padding: 6px;
+    align-items: center;
+    padding: 10px;
   }
 
   .storyboardModal {
-    border-radius: 14px;
-    max-height: calc(100vh - 12px);
-    padding: 10px;
+    border-radius: 12px;
+    padding: 8px;
+  }
+
+  .storyboardHeader {
+    justify-content: stretch;
+  }
+
+  .storyboardHeader button {
+    flex: 1 1 120px;
+    min-width: 0;
+  }
+
+  .storyboardTable {
+    overflow-x: visible;
+  }
+
+  .storyboardRows {
+    min-width: 0;
+  }
+
+  .sceneStripHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .storyboardRow .rowActions {
+    justify-content: stretch;
+  }
+
+  .storyboardRow .rowActions button {
+    flex: 1 1 112px;
+  }
+
+  .storyboardRow .rowActions .iconButton {
+    flex: 0 0 40px;
+    min-height: 40px;
+    width: 40px;
   }
 
   .sceneBlocks {
     grid-template-columns: 1fr;
   }
 
+  .storyboardRow .promptCell,
+  .storyboardRow .resultBlock,
+  .storyboardRow .mediaCell {
+    aspect-ratio: auto;
+  }
+
+  .promptCell textarea {
+    min-height: 132px;
+  }
+
+  .storyboardRow .resultBlock .mediaCell {
+    aspect-ratio: 9 / 16;
+    height: auto;
+    min-height: 320px;
+  }
+
   .mediaCell {
     min-height: 0;
+  }
+
+  .scriptModal {
+    max-height: calc(100vh - 20px);
+    padding: 14px;
+  }
+
+  .scriptModalHeader,
+  .scriptModalActions {
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .scriptModalActions {
+    flex-direction: column-reverse;
+  }
+
+  .scriptModalActions button {
+    width: 100%;
+  }
+
+  .scriptModalField textarea {
+    min-height: 52vh;
   }
 }

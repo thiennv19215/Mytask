@@ -1,15 +1,24 @@
 .videoToolBody {
+  --video-density: var(--app-density, 0.92);
+  --video-space-density: var(--app-space-density, 0.86);
+  --video-panel-padding: 14px;
+  --video-card-padding: 10px;
+  --video-grid-gap: 14px;
+  --video-field-gap: 7px;
+  --video-control-height: 40px;
+  --video-panel-max-height: calc(100vh - var(--app-top-nav-height, 78px) - 32px);
   align-items: start;
   background: #f7f8fb;
   display: grid;
-  gap: 18px;
+  gap: var(--video-grid-gap);
   grid-template-areas: "config workspace";
-  grid-template-columns: minmax(320px, 360px) minmax(0, 1fr);
+  grid-template-columns: minmax(292px, 332px) minmax(0, 1fr);
   height: calc(100vh - var(--app-top-nav-height, 78px));
-  margin: -58px -52px -72px;
+  margin: calc(var(--app-page-padding-top, 58px) * -1) calc(var(--app-page-padding-x, 52px) * -1)
+    calc(var(--app-page-padding-bottom, 72px) * -1);
   min-height: calc(100vh - var(--app-top-nav-height, 78px));
   overflow: hidden;
-  padding: 20px 22px;
+  padding: 16px 18px;
 }
 
 .configPanel,
@@ -27,7 +36,7 @@
   border-color: rgba(15, 23, 42, 0.08);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   grid-area: config;
-  height: calc(100vh - 122px);
+  height: var(--video-panel-max-height);
   place-self: start stretch;
 }
 
@@ -41,10 +50,10 @@
 
 .workspaceGroup {
   display: grid;
-  gap: 20px;
+  gap: var(--video-grid-gap);
   grid-area: workspace;
   grid-template-areas: "preview history";
-  grid-template-columns: minmax(520px, 3fr) minmax(220px, 1fr);
+  grid-template-columns: minmax(540px, 3fr) minmax(236px, 280px);
   min-width: 0;
 }
 
@@ -53,34 +62,34 @@
   align-self: start;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: calc(100vh - 122px);
+  gap: 10px;
+  max-height: var(--video-panel-max-height);
   overflow: auto;
-  padding: 18px;
+  padding: var(--video-panel-padding);
   scrollbar-color: rgba(15, 23, 42, 0.18) transparent;
   scrollbar-width: thin;
 }
 
 .historyPanel {
-  max-height: none;
-  overflow: visible;
-  padding: 18px 18px 16px;
+  max-height: var(--video-panel-max-height);
+  overflow: auto;
+  padding: var(--video-panel-padding);
 }
 
 .previewPanel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  max-height: calc(100vh - 122px);
+  gap: 10px;
+  max-height: var(--video-panel-max-height);
   overflow: auto;
-  padding: 18px;
+  padding: var(--video-panel-padding);
   scrollbar-color: rgba(15, 23, 42, 0.18) transparent;
   scrollbar-width: thin;
 }
 
 .previewHeader h2 {
   color: var(--navy);
-  font: 800 22px/1.15 Manrope, sans-serif;
+  font: 800 20px/1.15 Manrope, sans-serif;
   margin: 0;
 }
 
@@ -89,13 +98,13 @@
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.08em;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
 }
 
 .historyHeader h2,
 .resultsHeader h2 {
   color: var(--navy);
-  font: 800 26px/1.1 Manrope, sans-serif;
+  font: 800 20px/1.15 Manrope, sans-serif;
   margin: 0;
 }
 
@@ -106,21 +115,21 @@
 .modeTabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .configPanel .segmentedControl {
   background: #f4f6fa;
   border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 14px;
-  padding: 4px;
+  border-radius: 12px;
+  padding: 3px;
 }
 
 .viewSwitch {
   background: #f4f6fa;
   border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 14px;
-  padding: 4px;
+  border-radius: 12px;
+  padding: 3px;
 }
 
 .segmentedControl {
@@ -130,8 +139,8 @@
 
 .modeTabs {
   border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-  gap: 18px;
-  padding-bottom: 14px;
+  gap: 12px;
+  padding-bottom: 10px;
 }
 
 .modeTabs button {
@@ -141,7 +150,7 @@
   color: var(--muted);
   cursor: pointer;
   font-weight: 800;
-  min-height: 36px;
+  min-height: 40px;
   padding: 0 0;
   transition:
     background 0.18s ease,
@@ -158,7 +167,7 @@
 .modeTabs .activeMode {
   background: #eef2ff;
   color: #635bff;
-  padding-inline: 16px;
+  padding-inline: 14px;
 }
 
 .viewSwitch {
@@ -176,8 +185,8 @@
   cursor: pointer;
   font-size: 13px;
   font-weight: 800;
-  min-height: 36px;
-  padding: 0 12px;
+  min-height: var(--video-control-height);
+  padding: 0 10px;
   transition:
     background 0.18s ease,
     border-color 0.18s ease,
@@ -232,13 +241,13 @@
 .generatorForm {
   align-content: space-between;
   display: grid;
-  gap: clamp(10px, 1.15vh, 16px);
+  gap: clamp(8px, 0.95vh, 12px);
   height: 100%;
 }
 
 .uploadGrid {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -248,7 +257,7 @@
 
 .uploadSlot {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -256,13 +265,13 @@
   align-items: center;
   background: #fbfcff;
   border: 1px dashed rgba(15, 23, 42, 0.18);
-  border-radius: 14px;
+  border-radius: 12px;
   color: var(--navy);
   cursor: pointer;
   display: grid;
-  gap: 5px;
-  min-height: clamp(82px, 11vh, 96px);
-  padding: 10px;
+  gap: 4px;
+  min-height: clamp(76px, 9.5vh, 88px);
+  padding: 8px;
   text-align: center;
   transition:
     background 0.18s ease,
@@ -289,16 +298,16 @@
   background: #eef2ff;
   border-radius: 8px;
   color: #635bff;
-  height: 22px;
+  height: 20px;
   margin: 0 auto;
   padding: 6px;
-  width: 22px;
+  width: 20px;
 }
 
 .uploadBox img {
   aspect-ratio: 16 / 10;
   border-radius: 10px;
-  height: 44px;
+  height: 40px;
   margin: 0 auto;
   object-fit: cover;
   width: min(100%, 96px);
@@ -314,7 +323,7 @@
 }
 
 .uploadBox strong {
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .uploadBox span {
@@ -368,17 +377,17 @@
   font-weight: 800;
   line-height: 1.35;
   margin: -2px 0 0;
-  padding: 9px 10px;
+  padding: 8px 9px;
 }
 
 .fieldGroup {
   display: grid;
-  gap: 6px;
+  gap: var(--video-field-gap);
 }
 
 .fieldGroup span {
   color: var(--muted-strong);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
 }
 
@@ -389,7 +398,7 @@
   border-radius: 12px;
   color: var(--navy);
   outline: 0;
-  padding: 11px 13px;
+  padding: 10px 12px;
   resize: vertical;
   width: 100%;
 }
@@ -399,17 +408,17 @@
 }
 
 .fieldGroup textarea {
-  height: clamp(104px, 14vh, 132px);
-  min-height: 104px;
+  height: clamp(88px, 11vh, 116px);
+  min-height: 88px;
 }
 
 .fieldGroup select {
-  min-height: 44px;
+  min-height: var(--video-control-height);
 }
 
 .settingsGrid {
   display: grid;
-  gap: 8px;
+  gap: var(--video-field-gap);
   grid-template-columns: 1fr;
 }
 
@@ -419,10 +428,10 @@
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: space-between;
-  min-height: 44px;
-  padding: 0 12px;
+  min-height: var(--video-control-height);
+  padding: 0 10px;
 }
 
 .settingsGrid > .fieldGroup select {
@@ -443,9 +452,9 @@
 
 .compactOptions {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   grid-column: 1 / -1;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
 }
 
 .optionGroup {
@@ -453,9 +462,9 @@
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 12px;
   display: grid;
-  gap: 4px;
-  min-height: 52px;
-  padding: 8px 10px;
+  gap: 3px;
+  min-height: 48px;
+  padding: 7px 9px;
 }
 
 .optionGroup > span {
@@ -492,8 +501,8 @@
   font-weight: 900;
   gap: 8px;
   justify-content: center;
-  min-height: 48px;
-  padding: 0 18px;
+  min-height: 44px;
+  padding: 0 16px;
 }
 
 .primaryButton svg {
@@ -510,7 +519,7 @@
 .resultsHeader {
   align-items: center;
   display: flex;
-  gap: 14px;
+  gap: 10px;
   justify-content: space-between;
 }
 
@@ -519,7 +528,7 @@
 }
 
 .videoPreview {
-  --preview-padding: clamp(14px, 1.8vw, 20px);
+  --preview-padding: clamp(10px, 1.25vw, 16px);
   background: linear-gradient(180deg, #fbfcff 0%, #f5f7fb 100%);
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 16px;
@@ -543,7 +552,7 @@
   max-height: 100%;
   max-width: 100%;
   overflow: hidden;
-  padding: 18px;
+  padding: 14px;
   place-items: center;
   position: relative;
 }
@@ -571,8 +580,8 @@
 
 .previewPortrait .previewScene {
   aspect-ratio: 9 / 16;
-  height: clamp(500px, calc(100vh - 220px), 660px);
-  max-width: min(100%, 390px);
+  height: clamp(500px, calc(100vh - 190px), 700px);
+  max-width: min(100%, 400px);
   width: auto;
 }
 
@@ -598,7 +607,7 @@
   left: 20px;
   max-width: min(520px, calc(100% - 150px));
   position: absolute;
-  top: 18px;
+  top: 16px;
   z-index: 2;
 }
 
@@ -610,7 +619,7 @@
   left: 12px;
   max-width: calc(100% - 24px);
   width: calc(100% - 24px);
-  padding: 10px;
+  padding: 9px;
   top: auto;
 }
 
@@ -620,8 +629,8 @@
 }
 
 .previewPortrait .playButton {
-  height: 56px;
-  width: 56px;
+  height: 58px;
+  width: 58px;
 }
 
 .previewScene span,
@@ -638,8 +647,8 @@
 .historyItem strong {
   color: var(--navy);
   display: -webkit-box;
-  font: 800 14px/1.35 Manrope, sans-serif;
-  margin-top: 6px;
+  font: 800 13px/1.32 Manrope, sans-serif;
+  margin-top: 4px;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -675,9 +684,9 @@
   box-shadow: 0 18px 40px rgba(0, 27, 68, 0.18);
   cursor: pointer;
   display: grid;
-  height: 64px;
+  height: 60px;
   place-items: center;
-  width: 64px;
+  width: 60px;
 }
 
 .playButton span {
@@ -707,10 +716,10 @@
   background: rgba(254, 242, 242, 0.9);
   color: #991b1b;
   display: grid;
-  gap: 8px;
+  gap: 6px;
   inset: 0;
   justify-items: center;
-  padding: 24px;
+  padding: 18px;
   position: absolute;
   text-align: center;
   z-index: 2;
@@ -744,7 +753,7 @@
 .loadingStatus {
   align-items: center;
   display: grid;
-  gap: 12px;
+  gap: 10px;
   justify-items: center;
   transform: translateY(-6%);
 }
@@ -772,10 +781,10 @@
 
 .previewIconActions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   position: absolute;
-  right: 16px;
-  top: 16px;
+  right: 12px;
+  top: 12px;
   z-index: 1;
 }
 
@@ -787,9 +796,9 @@
   cursor: pointer;
   display: grid;
   font-weight: 900;
-  height: 38px;
+  height: 40px;
   place-items: center;
-  width: 38px;
+  width: 40px;
 }
 
 .previewIconActions svg {
@@ -811,19 +820,19 @@
 
 .resultsSection {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-height: 0;
 }
 
 .resultGrid {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
 }
 
 .historyList {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .historyItem {
@@ -833,16 +842,16 @@
   color: inherit;
   cursor: pointer;
   display: grid;
-  gap: 12px;
-  grid-template-columns: 76px minmax(0, 1fr);
-  padding: 10px;
+  gap: 8px;
+  grid-template-columns: 52px minmax(0, 1fr);
+  padding: var(--video-card-padding);
   text-align: left;
 }
 
 .historyItem {
-  gap: 9px;
-  grid-template-columns: 56px minmax(0, 1fr);
-  padding: 10px;
+  gap: 8px;
+  grid-template-columns: 52px minmax(0, 1fr);
+  padding: var(--video-card-padding);
 }
 
 .historyItem:hover,
@@ -890,9 +899,9 @@
 .historyItem p {
   color: var(--muted);
   display: -webkit-box;
-  font-size: 13px;
-  line-height: 1.45;
-  margin: 4px 0 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 3px 0 5px;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -912,7 +921,7 @@
   align-items: center;
   aspect-ratio: 16 / 10;
   background: linear-gradient(135deg, #eef0ff, #e0f2fe);
-  border-radius: 12px;
+  border-radius: 10px;
   color: #635bff;
   display: flex;
   justify-content: center;
@@ -938,7 +947,7 @@
   display: grid;
   gap: 3px;
   min-width: 0;
-  padding: 40px 12px 12px;
+  padding: 34px 10px 10px;
   position: relative;
   z-index: 1;
 }
@@ -981,13 +990,9 @@
   width: 100%;
 }
 
-.historyHeader h2 {
-  font-size: 22px;
-}
-
 .historyList {
   grid-template-columns: 1fr;
-  gap: 10px;
+  gap: 8px;
 }
 
 .historyThumb {
@@ -1001,9 +1006,9 @@
   border-radius: 16px;
   color: var(--muted);
   display: grid;
-  gap: 10px;
-  min-height: 240px;
-  padding: 24px;
+  gap: 8px;
+  min-height: 180px;
+  padding: 18px;
   place-items: center;
   text-align: center;
 }
@@ -1075,7 +1080,7 @@
   }
 
   .historyPanel {
-    max-height: calc(100vh - 122px);
+    max-height: var(--video-panel-max-height);
   }
 
   .historyList {

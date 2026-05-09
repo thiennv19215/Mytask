@@ -2,7 +2,7 @@
   background: var(--background);
   display: flex;
   height: 100vh;
-  min-height: 700px;
+  min-height: 640px;
   overflow: hidden;
   width: 100%;
 }
@@ -14,7 +14,8 @@
   flex: 0 0 var(--app-sidebar-width);
   flex-direction: column;
   justify-content: space-between;
-  padding: 24px 16px 16px;
+  padding: var(--density-shell-sidebar-padding-top) var(--density-shell-sidebar-padding-x)
+    var(--density-shell-sidebar-padding-bottom);
   transition:
     flex-basis 0.2s ease,
     padding 0.2s ease;
@@ -22,7 +23,7 @@
 
 .sidebarCollapsed {
   flex-basis: var(--app-sidebar-collapsed-width);
-  padding: 26px 14px 18px;
+  padding: var(--density-shell-sidebar-padding-top) 12px var(--density-shell-sidebar-padding-bottom);
 }
 
 .sidebarMain {
@@ -40,38 +41,38 @@
   color: inherit;
   cursor: default;
   display: flex;
-  gap: 12px;
-  margin: 0 10px;
+  gap: 10px;
+  margin: 0 8px;
   padding: 0;
   text-align: left;
-  width: calc(100% - 20px);
+  width: calc(100% - 16px);
 }
 
 .brandCopy {
   display: grid;
-  gap: 4px;
+  gap: 3px;
 }
 
 .brandCopy strong {
   color: var(--navy);
-  font: 900 18px/1 Manrope, sans-serif;
+  font: 900 17px/1 Manrope, sans-serif;
 }
 
 .brandCopy span {
   color: #8a9ab4;
-  font-size: 13px;
+  font-size: var(--density-helper-size);
   font-weight: 700;
 }
 
 .brandMark {
   align-items: center;
   background: var(--navy);
-  border-radius: 12px;
+  border-radius: 11px;
   color: #ffffff;
   display: grid;
-  height: 42px;
+  height: var(--density-control-height);
   place-items: center;
-  width: 42px;
+  width: var(--density-control-height);
 }
 
 .sidebarCollapsed {
@@ -84,10 +85,10 @@
 
 .sidebarStatus {
   color: var(--navy);
-  font-size: 13px;
+  font-size: var(--density-helper-size);
   font-weight: 900;
   line-height: 1.35;
-  margin: 12px 10px 22px;
+  margin: 10px 8px var(--density-shell-section-gap);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -96,14 +97,14 @@
 .sidebarDivider {
   background: rgba(0, 27, 68, 0.06);
   height: 1px;
-  margin: 22px 0 18px;
+  margin: var(--density-shell-section-gap) 0 14px;
   width: 100%;
 }
 
 .navGroup {
   display: grid;
-  gap: 6px;
-  margin-top: 22px;
+  gap: 5px;
+  margin-top: var(--density-shell-section-gap);
 }
 
 .navGroup:first-of-type {
@@ -112,10 +113,10 @@
 
 .sectionLabel {
   color: #a4adbd;
-  font-size: 12px;
+  font-size: var(--density-label-size);
   font-weight: 900;
   letter-spacing: 0.08em;
-  margin: 0 0 5px 16px;
+  margin: 0 0 4px 14px;
   text-transform: uppercase;
 }
 
@@ -127,7 +128,7 @@
 
 .sideNav {
   display: grid;
-  gap: 4px;
+  gap: var(--density-shell-nav-gap);
 }
 
 .navItem {
@@ -138,9 +139,9 @@
   color: var(--muted);
   cursor: pointer;
   display: flex;
-  gap: 12px;
-  height: 40px;
-  padding: 0 15px;
+  gap: 10px;
+  height: 38px;
+  padding: 0 13px;
   text-decoration: none;
   text-align: left;
   transition:
@@ -170,12 +171,12 @@
   align-items: center;
   background: #ffffff;
   border: 1px solid rgba(0, 27, 68, 0.12);
-  border-radius: 12px;
+  border-radius: 11px;
   color: var(--navy);
   cursor: pointer;
   display: flex;
-  gap: 12px;
-  height: 42px;
+  gap: 10px;
+  height: var(--density-control-height);
   justify-content: center;
   padding: 0 12px;
   transition:
@@ -201,7 +202,7 @@
 .sidebarCollapsed .brandButton {
   justify-content: center;
   margin-inline: 0;
-  margin-bottom: 70px;
+  margin-bottom: 56px;
   width: 100%;
 }
 
@@ -222,7 +223,7 @@
 }
 
 .sidebarCollapsed .navGroup {
-  margin-top: 22px;
+  margin-top: var(--density-shell-section-gap);
 }
 
 .sidebarCollapsed .navGroup:first-of-type {
@@ -230,12 +231,12 @@
 }
 
 .sidebarCollapsed .sideNav {
-  gap: 4px;
+  gap: var(--density-shell-nav-gap);
 }
 
 .sidebarFooter {
   border-top: 1px solid rgba(0, 27, 68, 0.06);
-  padding-top: 14px;
+  padding-top: 12px;
 }
 
 .sidebarCollapsed .sideNav {
@@ -245,10 +246,10 @@
 .sidebarCollapsed .navItem,
 .sidebarCollapsed .collapseButton {
   gap: 0;
-  height: 40px;
+  height: 38px;
   justify-content: center;
   padding: 0;
-  width: 48px;
+  width: 46px;
 }
 
 .sidebarCollapsed .navIcon {
@@ -273,10 +274,10 @@
   align-items: center;
   border-bottom: 1px solid rgba(0, 27, 68, 0.07);
   display: flex;
-  gap: 20px;
+  gap: 16px;
   height: var(--app-top-nav-height);
   justify-content: space-between;
-  padding: 0 52px;
+  padding: 0 var(--app-page-padding-x);
   position: relative;
 }
 
@@ -284,7 +285,7 @@
   align-items: center;
   display: flex;
   flex: 1;
-  gap: 24px;
+  gap: 20px;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -301,7 +302,7 @@
   color: var(--muted);
   cursor: pointer;
   font-weight: 700;
-  padding: 24px 0 21px;
+  padding: 21px 0 18px;
   position: relative;
   text-decoration: none;
   transition:
@@ -339,14 +340,14 @@
 .loginButton {
   background: var(--navy);
   border: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 10px 20px rgba(0, 27, 68, 0.12);
   color: #ffffff;
   cursor: pointer;
   flex: 0 0 auto;
   font-weight: 800;
-  height: 42px;
-  padding: 0 22px;
+  height: var(--density-control-height);
+  padding: 0 20px;
   transition:
     box-shadow 0.18s ease,
     transform 0.18s ease;
@@ -402,7 +403,7 @@
 .mainContent {
   flex: 1;
   overflow: auto;
-  padding: 58px 52px 72px;
+  padding: var(--app-page-padding-top) var(--app-page-padding-x) var(--app-page-padding-bottom);
 }
 
 @media (max-width: 1100px) {
@@ -411,17 +412,17 @@
   }
 
   .sidebar {
-    flex-basis: 250px;
-    padding-inline: 18px;
+    flex-basis: calc(var(--app-sidebar-width) - 28px);
+    padding-inline: var(--density-shell-sidebar-padding-x);
   }
 
   .sidebarCollapsed {
-    flex-basis: 78px;
-    padding-inline: 13px;
+    flex-basis: var(--app-sidebar-collapsed-width);
+    padding-inline: 12px;
   }
 
   .topNav {
-    padding-inline: 32px;
+    padding-inline: calc(var(--app-page-padding-x) * 0.8);
   }
 
   .topLinks {
@@ -429,7 +430,7 @@
   }
 
   .mainContent {
-    padding-inline: 36px;
+    padding-inline: calc(var(--app-page-padding-x) * 0.9);
   }
 }
 
@@ -448,7 +449,7 @@
   .topNav {
     align-items: center;
     height: auto;
-    padding: 16px 20px;
+    padding: 14px 20px;
   }
 
   .topLinks {
@@ -497,6 +498,6 @@
   }
 
   .mainContent {
-    padding: 44px 20px 72px;
+    padding: var(--app-page-padding-top) 20px var(--app-page-padding-bottom);
   }
 }

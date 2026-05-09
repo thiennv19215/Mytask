@@ -22,14 +22,26 @@
 }
 
 :root {
-  --app-density: 0.92;
-  --app-space-density: 0.86;
-  --app-sidebar-width: 292px;
-  --app-sidebar-collapsed-width: 82px;
-  --app-top-nav-height: 70px;
-  --app-page-padding-x: 52px;
-  --app-page-padding-top: 58px;
-  --app-page-padding-bottom: 72px;
+  --app-density: 0.9;
+  --app-space-density: 0.82;
+  --app-sidebar-width: 280px;
+  --app-sidebar-collapsed-width: 76px;
+  --app-top-nav-height: 64px;
+  --app-page-padding-x: 40px;
+  --app-page-padding-top: 44px;
+  --app-page-padding-bottom: 56px;
+  --density-control-height: 42px;
+  --density-panel-padding: 16px;
+  --density-card-padding: 14px;
+  --density-grid-gap: 16px;
+  --density-field-gap: 10px;
+  --density-label-size: 12px;
+  --density-helper-size: 12px;
+  --density-shell-sidebar-padding-x: 14px;
+  --density-shell-sidebar-padding-top: 20px;
+  --density-shell-sidebar-padding-bottom: 14px;
+  --density-shell-nav-gap: 4px;
+  --density-shell-section-gap: 16px;
   --background: #fbf9f8;
   --surface: #ffffff;
   --surface-soft: #f5f3f3;

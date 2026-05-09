@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AppsIcon } from "../../../components/apps-icons";
+import { downloadMedia } from "@/features/downloads/download-media";
 import { createVideoJob } from "@/features/generation/generation-api";
 import {
   useImageForVideoEventName,
@@ -42,11 +43,7 @@ type ReferenceImage = {
 };
 
 function mapVideoRatioToAspectRatio(ratio: string): GenerationAspectRatio {
-  if (ratio === "1:1") {
-    return "square";
-  }
-
-  if (ratio === "16:9") {
+  if (ratio === "Landscape") {
     return "landscape";
   }
 
@@ -55,10 +52,10 @@ function mapVideoRatioToAspectRatio(ratio: string): GenerationAspectRatio {
 
 function mapAspectRatioToVideoRatio(aspectRatio: string | null): string {
   if (aspectRatio === "landscape") {
-    return "16:9";
+    return "Landscape";
   }
 
-  return "9:16";
+  return "Portrait";
 }
 
 function getVideoStatusKind(status: string) {
@@ -100,10 +97,7 @@ export function VideoGeneratorMainBody() {
   const [activeMode, setActiveMode] = useState("Create Video");
   const [segment, setSegment] = useState("Frame");
   const [prompt, setPrompt] = useState("");
-  const [model, setModel] = useState("Veo3.1 Fast");
-  const [resolution, setResolution] = useState("720p");
-  const [ratio, setRatio] = useState("9:16");
-  const [duration, setDuration] = useState("8s");
+  const [ratio, setRatio] = useState("Portrait");
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [optimisticVideos, setOptimisticVideos] = useState<VideoCard[]>([]);
   const [referenceImages, setReferenceImages] = useState<Array<ReferenceImage | null>>([null, null]);
@@ -120,7 +114,7 @@ export function VideoGeneratorMainBody() {
   const selectedVideoStatusKind = selectedVideo ? getVideoStatusKind(selectedVideo.status) : "idle";
   const isPreviewPending = selectedVideoStatusKind === "pending";
   const isPreviewFailed = selectedVideoStatusKind === "failed";
-  const previewClass = selectedVideo?.ratio === "9:16" ? styles.previewPortrait : styles.previewLandscape;
+  const previewClass = selectedVideo?.ratio === "Portrait" ? styles.previewPortrait : styles.previewLandscape;
   const hasUploadingReferences = referenceImages.some((image) => image?.status === "uploading");
   const videoQueueCount = countActiveGenerationJobs([...visibleOptimisticVideos, ...generatedVideos]);
   const isVideoQueueFull = videoQueueCount >= 4;
@@ -197,11 +191,11 @@ export function VideoGeneratorMainBody() {
     const optimisticId = `local-${Date.now()}`;
     const optimisticVideo: VideoCard = {
       id: optimisticId,
-      model,
+      model: "Veo3.1 Fast",
       prompt: cleanPrompt,
       ratio,
-      duration,
-      quality: resolution,
+      duration: "8s",
+      quality: "HD",
       createdAt: "Generation",
       status: "creating",
       resultUrl: null,
@@ -297,6 +291,18 @@ export function VideoGeneratorMainBody() {
     setReferenceImages((images) => images.map((image, index) => (index === slotIndex ? null : image)));
   }
 
+  function handleDownloadVideo(video: VideoCard | null) {
+    if (!video?.resultUrl) {
+      return;
+    }
+
+    void downloadMedia({
+      fallbackFileName: "generated-video",
+      fileName: `generated-video-${video.id}`,
+      url: video.resultUrl
+    });
+  }
+
   function renderUploadBox(slotIndex: number, label: string, inputRef: React.RefObject<HTMLInputElement | null>) {
     const image = referenceImages[slotIndex];
 
@@ -380,38 +386,12 @@ export function VideoGeneratorMainBody() {
           </label>
 
           <div className={styles.settingsGrid}>
-            <label className={styles.fieldGroup}>
-              <span>Model</span>
-              <select onChange={(event) => setModel(event.target.value)} value={model}>
-                <option>Veo3.1 Fast</option>
-                <option>Veo3 Fast</option>
-                <option>Video Standard</option>
-              </select>
-            </label>
-
             <div className={styles.compactOptions}>
               <label className={styles.optionGroup}>
-                <span>Resolution</span>
-                <select onChange={(event) => setResolution(event.target.value)} value={resolution}>
-                  <option>720p</option>
-                  <option>1080p</option>
-                </select>
-              </label>
-
-              <label className={styles.optionGroup}>
-                <span>Ratio</span>
+                <span>Aspect</span>
                 <select onChange={(event) => setRatio(event.target.value)} value={ratio}>
-                  <option>16:9</option>
-                  <option>9:16</option>
-                </select>
-              </label>
-
-              <label className={styles.optionGroup}>
-                <span>Duration</span>
-                <select onChange={(event) => setDuration(event.target.value)} value={duration}>
-                  <option>5s</option>
-                  <option>8s</option>
-                  <option>12s</option>
+                  <option>Portrait</option>
+                  <option>Landscape</option>
                 </select>
               </label>
             </div>
@@ -466,8 +446,13 @@ export function VideoGeneratorMainBody() {
                 </button>
               ) : null}
               <div className={styles.previewIconActions}>
-                <button aria-label="Download video" type="button">
-                  <AppsIcon name="video" />
+                <button
+                  aria-label="Download video"
+                  disabled={!selectedVideo?.resultUrl}
+                  onClick={() => handleDownloadVideo(selectedVideo)}
+                  type="button"
+                >
+                  <AppsIcon name="download" />
                 </button>
                 <button aria-label="Remove video" type="button">
                   x

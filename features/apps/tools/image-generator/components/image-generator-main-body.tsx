@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppsIcon } from "../../../components/apps-icons";
+import { downloadMedia } from "@/features/downloads/download-media";
 import { createImageJob } from "@/features/generation/generation-api";
 import { dispatchUseImageForVideoEvent } from "@/features/generation/generation-events";
 import { useHydrateGenerationHistory } from "@/features/generation/generation-history";
@@ -15,10 +16,7 @@ import { getPayloadImageUrl, getPreviewImageUrl } from "@/features/uploads/uploa
 import styles from "./image-generator-main-body.module.css";
 
 const settingOptions = {
-  model: ["Nano Banana 2", "Studio Pro", "Product Sharp", "Lifestyle Soft"],
-  ratio: ["1:1", "3:4", "4:5", "9:16", "16:9"],
-  count: ["1/1", "1/2", "1/4", "1/6"],
-  quality: ["1K", "2K", "4K"]
+  ratio: ["Portrait", "Square", "Landscape"]
 };
 
 const draggedResultImageMimeType = "application/x-genjob-result-image";
@@ -74,11 +72,11 @@ function getJobStatusKind(status: string | null | undefined) {
 }
 
 function mapRatioToAspectRatio(ratio: string): GenerationAspectRatio {
-  if (ratio === "1:1") {
+  if (ratio === "Square") {
     return "square";
   }
 
-  if (ratio === "16:9") {
+  if (ratio === "Landscape") {
     return "landscape";
   }
 
@@ -118,10 +116,7 @@ export function ImageGeneratorMainBody() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageJobs = useGenerationJobs("image");
   const [settings, setSettings] = useState<Record<SettingKey, string>>({
-    model: "Nano Banana 2",
-    ratio: "9:16",
-    count: "1/4",
-    quality: "1K"
+    ratio: "Portrait"
   });
 
   async function handleGenerate(event: React.FormEvent<HTMLFormElement>) {
@@ -206,12 +201,11 @@ export function ImageGeneratorMainBody() {
   const isImageQueueFull = imageQueueCount >= 4;
 
   function handleDownloadImage(url: string, fileName?: string) {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName ?? "generated-image";
-    link.target = "_blank";
-    link.rel = "noreferrer";
-    link.click();
+    void downloadMedia({
+      fallbackFileName: "generated-image",
+      fileName,
+      url
+    });
   }
 
   function handleUseImageForVideo(
@@ -370,10 +364,7 @@ export function ImageGeneratorMainBody() {
   }
 
   const settingControls: Array<{ key: SettingKey; label: string }> = [
-    { key: "model", label: "Model" },
-    { key: "ratio", label: "Ratio" },
-    { key: "count", label: "Count" },
-    { key: "quality", label: "Quality" }
+    { key: "ratio", label: "Aspect" }
   ];
   const hasUploadingReferences = referenceImages.some((image) => image.status === "uploading");
 
@@ -562,7 +553,7 @@ export function ImageGeneratorMainBody() {
                 <button
                   aria-expanded={openSetting === control.key}
                   aria-haspopup="listbox"
-                  className={`${styles.settingButton} ${control.key === "model" ? styles.primarySettingButton : ""}`}
+                  className={styles.settingButton}
                   onClick={() => setOpenSetting((currentKey) => (currentKey === control.key ? null : control.key))}
                   type="button"
                 >

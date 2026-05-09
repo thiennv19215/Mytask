@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AppsIcon } from "@/features/apps/components/apps-icons";
+import { downloadMedia } from "@/features/downloads/download-media";
 import { listGenerationResources, type GenerationResourceItem } from "@/features/generation/generation-history";
 import { removeGenerationJob, removeGenerationJobs } from "@/features/generation/generation-store";
 import { getPreviewImageUrl } from "@/features/uploads/upload-image-url";
@@ -28,12 +29,11 @@ function getTitle(item: GenerationResourceItem) {
 }
 
 function handleDownload(url: string, fileName: string) {
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = fileName;
-  link.target = "_blank";
-  link.rel = "noreferrer";
-  link.click();
+  void downloadMedia({
+    fallbackFileName: "generated-media",
+    fileName,
+    url
+  });
 }
 
 export function ResourcesMainBody() {
@@ -247,7 +247,12 @@ export function ResourcesMainBody() {
           <div className={styles.grid}>
             {visibleItems.map((item) => (
               <article className={styles.card} key={item.id}>
-                <button className={styles.previewButton} onClick={() => setSelectedItem(item)} type="button">
+                <button
+                  aria-label={`Xem ${getTitle(item)}`}
+                  className={styles.previewButton}
+                  onClick={() => setSelectedItem(item)}
+                  type="button"
+                >
                   <span className={styles.typeBadge}>
                     <AppsIcon compact name={item.type === "image" ? "image" : "video"} />
                     {item.type === "image" ? "Anh" : "Video"}
@@ -275,11 +280,20 @@ export function ResourcesMainBody() {
                   <a href={item.url} rel="noreferrer" target="_blank">
                     Mo URL
                   </a>
-                  <button onClick={() => handleDownload(item.url, `generated-${item.type}-${item.id}`)} type="button">
+                  <button
+                    aria-label={`Tai ${getTitle(item)}`}
+                    onClick={() => handleDownload(item.url, `generated-${item.type}-${item.id}`)}
+                    type="button"
+                  >
                     <AppsIcon compact name="download" />
                     Tai
                   </button>
-                  <button className={styles.deleteAction} onClick={() => setDeleteTarget(item)} type="button">
+                  <button
+                    aria-label={`Xoa ${getTitle(item)}`}
+                    className={styles.deleteAction}
+                    onClick={() => setDeleteTarget(item)}
+                    type="button"
+                  >
                     Xoa
                   </button>
                 </div>
@@ -304,7 +318,7 @@ export function ResourcesMainBody() {
                 <p>{formatDate(selectedItem.createdAt)}</p>
               </div>
               <button aria-label="Dong viewer" onClick={() => setSelectedItem(null)} type="button">
-                x
+                X
               </button>
             </header>
 
@@ -340,6 +354,7 @@ export function ResourcesMainBody() {
             onClick={(event) => event.stopPropagation()}
             role="dialog"
           >
+            <p className={styles.confirmEyebrow}>Xac nhan xoa</p>
             <h2>Xoa khoi thu vien?</h2>
             <p>
               Tai nguyen nay se duoc an khoi Resources bang soft delete. File tren R2 khong bi xoa trong buoc nay.
@@ -350,7 +365,7 @@ export function ResourcesMainBody() {
               <button disabled={isDeleting} onClick={() => setDeleteTarget(null)} type="button">
                 Huy
               </button>
-              <button disabled={isDeleting} onClick={handleDeleteResource} type="button">
+              <button className={styles.confirmDangerButton} disabled={isDeleting} onClick={handleDeleteResource} type="button">
                 {isDeleting ? "Dang xoa..." : "Xoa"}
               </button>
             </div>
@@ -367,6 +382,7 @@ export function ResourcesMainBody() {
             onClick={(event) => event.stopPropagation()}
             role="dialog"
           >
+            <p className={styles.confirmEyebrow}>Hanh dong nguy hiem</p>
             <h2>Xoa tat ca tai nguyen?</h2>
             <p>
               Tat ca lich su da ket thuc, gom success va failed, se duoc an bang soft delete. Job dang chay khong bi xoa.
@@ -377,7 +393,7 @@ export function ResourcesMainBody() {
               <button disabled={isDeleting} onClick={() => setIsDeleteAllConfirmOpen(false)} type="button">
                 Huy
               </button>
-              <button disabled={isDeleting} onClick={handleDeleteAllResources} type="button">
+              <button className={styles.confirmDangerButton} disabled={isDeleting} onClick={handleDeleteAllResources} type="button">
                 {isDeleting ? "Dang xoa..." : "Xoa tat ca"}
               </button>
             </div>
