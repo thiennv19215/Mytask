@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { homeTools, platformStats } from "../home.data";
 import { ArrowRightIcon, SparkIcon } from "@/shared/ui/icons";
 import styles from "./home-main-body.module.css";
@@ -14,18 +15,18 @@ export function HomeMainBody() {
           Sáng tạo <span>không giới hạn</span> với AI
         </h1>
         <p>
-          Tạo ảnh, video và trò chuyện với AI thông minh - tất cả trong một nền tảng mạnh mẽ, dễ sử dụng và
-          không cần kinh nghiệm kỹ thuật.
+          Tạo ảnh, video và trò chuyện với AI thông minh trong một nền tảng mạnh mẽ, dễ sử dụng và không cần kinh
+          nghiệm kỹ thuật.
         </p>
         <div className={styles.heroActions}>
-          <button className={styles.primaryGradientButton} type="button">
+          <Link className={styles.primaryGradientButton} href="/apps">
             <SparkIcon />
             Bắt đầu tạo
-          </button>
-          <button className={styles.secondaryButton} type="button">
+          </Link>
+          <Link className={styles.secondaryButton} href="/chatbot">
             Chat với AI
             <ArrowRightIcon />
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -42,14 +43,14 @@ export function HomeMainBody() {
         <h2>Công cụ AI mạnh mẽ</h2>
         <p>Chọn công cụ phù hợp và bắt đầu sáng tạo ngay</p>
         <div className={styles.toolGrid}>
-          {homeTools.map(([title, description]) => (
-            <article className={styles.toolCard} key={title}>
+          {homeTools.map((tool) => (
+            <article className={styles.toolCard} key={tool.title}>
               <div className={styles.toolIcon}>
                 <SparkIcon />
               </div>
-              <h3>{title}</h3>
-              <p>{description}</p>
-              <button type="button">Khám phá</button>
+              <h3>{tool.title}</h3>
+              <p>{tool.description}</p>
+              <Link href={tool.href}>Khám phá</Link>
             </article>
           ))}
         </div>

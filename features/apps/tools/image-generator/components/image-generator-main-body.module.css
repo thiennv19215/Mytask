@@ -1,0 +1,829 @@
+.imageToolBody {
+  background: var(--surface-soft);
+  display: flex;
+  flex-direction: column;
+  margin: -74px -64px -88px;
+  min-height: calc(100vh - 78px);
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+}
+
+.imageGallery {
+  align-content: start;
+  display: grid;
+  gap: 16px;
+  grid-auto-flow: dense;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  height: 100%;
+  min-height: calc(100vh - 78px);
+  overflow: auto;
+  padding: 16px 16px 190px;
+}
+
+.galleryTile {
+  aspect-ratio: 9 / 16;
+  border: 0;
+  border-radius: 22px;
+  box-shadow: 0 10px 28px rgba(0, 27, 68, 0.08);
+  color: var(--navy);
+  display: flex;
+  font: inherit;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  text-align: left;
+}
+
+.galleryTile[data-status="success"]:hover,
+.galleryTile[data-status="success"]:focus-within {
+  box-shadow: 0 18px 38px rgba(0, 27, 68, 0.16);
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.galleryTile[draggable="true"] {
+  cursor: grab;
+}
+
+.galleryTile[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.galleryTile[data-status="failed"] {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.galleryTile::before {
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.82), transparent 16%),
+    radial-gradient(circle at 72% 68%, rgba(255, 255, 255, 0.38), transparent 22%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 42%);
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.galleryTile[data-status="failed"]::before {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.8), transparent 18%),
+    linear-gradient(135deg, rgba(254, 202, 202, 0.48), rgba(255, 255, 255, 0.18));
+}
+
+.galleryTile[data-status="success"]::before {
+  content: none;
+}
+
+.tileOpenButton,
+.tileStateContent {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  display: grid;
+  font: inherit;
+  inset: 0;
+  padding: 0;
+  place-items: center;
+  position: absolute;
+  text-align: left;
+  width: 100%;
+}
+
+.tileOpenButton {
+  cursor: pointer;
+}
+
+.tileOpenButton:focus-visible {
+  outline: 3px solid rgba(99, 91, 255, 0.42);
+  outline-offset: -3px;
+}
+
+.tileStateContent {
+  pointer-events: none;
+}
+
+.generatedImage {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+
+.downloadImageButton {
+  align-items: center;
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 27, 68, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(0, 27, 68, 0.12);
+  color: var(--navy);
+  cursor: pointer;
+  display: inline-flex;
+  height: 42px;
+  justify-content: center;
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+  width: 42px;
+  z-index: 3;
+}
+
+.downloadImageButton svg {
+  height: 19px;
+  width: 19px;
+}
+
+.downloadImageButton:hover,
+.downloadImageButton:focus-visible {
+  background: var(--navy);
+  color: #ffffff;
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.tileTone0 {
+  background: linear-gradient(135deg, #eef0ff, #e8fff4 48%, #f8fafc);
+}
+
+.tileTone1 {
+  background: linear-gradient(135deg, #e0f2fe, #f8fafc 42%, #eef0ff);
+}
+
+.tileTone2 {
+  background: linear-gradient(135deg, #f5f3f3, #e8fff4 45%, #e0e7ff);
+}
+
+.tileTone3 {
+  background: linear-gradient(135deg, #f8fafc, #dbeafe 46%, #f0fdf4);
+}
+
+.tileTone4 {
+  background: linear-gradient(135deg, #ffffff, #eef0ff 52%, #e8fff4);
+}
+
+.tileTone5 {
+  background: linear-gradient(135deg, #f8fafc, #e0f2fe 42%, #ffffff);
+}
+
+.tileContent {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  inset: auto 14px 12px 14px;
+  position: absolute;
+  z-index: 1;
+}
+
+.tileIcon {
+  backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 12px;
+  color: currentColor;
+  height: 34px;
+  padding: 8px;
+  width: 34px;
+}
+
+.tileContent strong {
+  font: 900 13px/1.1 Manrope, sans-serif;
+  text-transform: capitalize;
+}
+
+.emptyGalleryState {
+  align-items: center;
+  align-self: center;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px dashed rgba(0, 27, 68, 0.14);
+  border-radius: 20px;
+  color: var(--muted);
+  display: grid;
+  gap: 10px;
+  grid-column: 1 / -1;
+  justify-items: center;
+  margin: 12vh auto 0;
+  max-width: 420px;
+  min-height: 220px;
+  padding: 32px;
+  text-align: center;
+  width: min(100%, 420px);
+}
+
+.emptyGalleryState svg {
+  background: #eef0ff;
+  border-radius: 14px;
+  color: #635bff;
+  height: 46px;
+  padding: 12px;
+  width: 46px;
+}
+
+.emptyGalleryState strong {
+  color: var(--navy);
+  font: 900 18px/1.2 Manrope, sans-serif;
+}
+
+.emptyGalleryState p {
+  font: 700 13px/1.45 Inter, sans-serif;
+  margin: 0;
+}
+
+.tileError {
+  color: #b91c1c;
+  display: -webkit-box;
+  font: 800 11px/1.25 Inter, sans-serif;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-width: 160px;
+  overflow: hidden;
+}
+
+.tileErrorState {
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(185, 28, 28, 0.16);
+  border-radius: 14px;
+  display: grid;
+  gap: 6px;
+  margin: 14px;
+  max-width: calc(100% - 28px);
+  padding: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.tileErrorState strong {
+  color: #991b1b;
+  font: 900 13px/1.2 Manrope, sans-serif;
+}
+
+.tileErrorState span {
+  color: #b91c1c;
+  display: -webkit-box;
+  font: 800 12px/1.35 Inter, sans-serif;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.tileLoading {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.42);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
+  text-align: center;
+  z-index: 1;
+}
+
+.tileLoading span {
+  animation: tileLoadingSpin 0.9s linear infinite;
+  border: 4px solid rgba(99, 91, 255, 0.16);
+  border-radius: 999px;
+  border-top-color: #635bff;
+  height: 34px;
+  width: 34px;
+}
+
+.tileLoading strong {
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 999px;
+  color: var(--navy);
+  display: inline-flex;
+  font: 900 12px/1.25 Inter, sans-serif;
+  max-width: calc(100% - 28px);
+  padding: 7px 10px;
+}
+
+@keyframes tileLoadingSpin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tileLoading span {
+    animation: none;
+  }
+}
+
+.promptComposer {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 24px;
+  bottom: 26px;
+  box-shadow: 0 24px 70px rgba(0, 27, 68, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  left: calc(312px + ((100vw - 312px) / 2));
+  max-width: 1008px;
+  padding: 14px;
+  position: fixed;
+  transform: translateX(-50%);
+  width: min(calc(100% - 48px), 1008px);
+  z-index: 4;
+}
+
+.promptComposer[data-drop-active="true"] {
+  border-color: rgba(99, 91, 255, 0.52);
+  box-shadow:
+    0 0 0 4px rgba(99, 91, 255, 0.12),
+    0 24px 70px rgba(0, 27, 68, 0.16);
+}
+
+.imageViewerBackdrop {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.48);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 24px;
+  position: fixed;
+  z-index: 20;
+}
+
+.imageViewer {
+  background: #ffffff;
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0, 27, 68, 0.28);
+  display: grid;
+  gap: 14px;
+  max-height: min(860px, calc(100vh - 48px));
+  max-width: min(980px, calc(100vw - 48px));
+  padding: 14px;
+  width: 100%;
+}
+
+.imageViewerHeader {
+  align-items: start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.imageViewerHeader strong {
+  color: var(--navy);
+  font: 900 16px/1.25 Manrope, sans-serif;
+}
+
+.imageViewerHeader p {
+  color: var(--muted);
+  display: -webkit-box;
+  font: 700 13px/1.4 Inter, sans-serif;
+  margin: 4px 0 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.imageViewerActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.imageViewerActions a,
+.imageViewerActions button {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 10px;
+  color: var(--navy);
+  cursor: pointer;
+  display: inline-flex;
+  font: 900 13px/1 Inter, sans-serif;
+  height: 36px;
+  justify-content: center;
+  min-width: 36px;
+  padding: 0 12px;
+  text-decoration: none;
+}
+
+.imageViewerActions a:hover,
+.imageViewerActions button:hover,
+.imageViewerActions a:focus-visible,
+.imageViewerActions button:focus-visible {
+  border-color: rgba(99, 91, 255, 0.32);
+  color: #635bff;
+  outline: 0;
+}
+
+.imageViewerCanvas {
+  background: #f8fafc;
+  border-radius: 16px;
+  display: grid;
+  max-height: calc(100vh - 170px);
+  min-height: 280px;
+  overflow: hidden;
+  place-items: center;
+}
+
+.imageViewerCanvas img {
+  display: block;
+  max-height: calc(100vh - 170px);
+  max-width: 100%;
+  object-fit: contain;
+  width: auto;
+}
+
+.composerError {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #b91c1c;
+  font: 800 13px/1.4 Inter, sans-serif;
+  margin: 0;
+  padding: 10px 12px;
+}
+
+.composerPromptRow {
+  align-items: start;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 62px minmax(0, 1fr);
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.addReferenceButton {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px dashed rgba(0, 27, 68, 0.18);
+  border-radius: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 3px;
+  height: 62px;
+  justify-content: center;
+  width: 62px;
+}
+
+.addReferenceButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.addReferenceButton span {
+  color: var(--muted-strong);
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.addReferenceButton:hover,
+.addReferenceButton:focus-visible {
+  background: #eef0ff;
+  border-color: rgba(99, 91, 255, 0.34);
+  color: #635bff;
+  outline: 0;
+}
+
+.referenceStrip {
+  display: flex;
+  gap: 10px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.referenceThumb {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 12px;
+  color: var(--muted-strong);
+  display: grid;
+  flex: 0 0 156px;
+  gap: 6px;
+  grid-template-columns: 42px minmax(0, 1fr) 24px;
+  min-height: 54px;
+  padding: 6px;
+}
+
+.referenceThumb[data-status="failed"] {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.referenceThumb[data-status="uploading"] {
+  opacity: 0.76;
+}
+
+.referenceThumb img,
+.referenceThumb > svg {
+  aspect-ratio: 1;
+  background: #eef0ff;
+  border-radius: 9px;
+  color: #635bff;
+  height: 42px;
+  object-fit: cover;
+  padding: 0;
+  width: 42px;
+}
+
+.referenceThumb > svg {
+  padding: 10px;
+}
+
+.referenceThumb span,
+.referenceThumb small {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.25;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.referenceThumb small {
+  color: #b91c1c;
+  grid-column: 2 / -1;
+}
+
+.referenceThumb button {
+  background: #ffffff;
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+  height: 24px;
+  width: 24px;
+}
+
+.promptComposerField {
+  display: grid;
+  min-width: 0;
+}
+
+.promptComposerField span {
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+}
+
+.promptComposerField textarea {
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--navy);
+  font: 600 15px/1.5 Inter, sans-serif;
+  min-height: 62px;
+  outline: 0;
+  padding: 18px 0 0;
+  resize: none;
+  width: 100%;
+}
+
+.promptComposerField textarea::placeholder {
+  color: #8a9ab4;
+}
+
+.promptComposerField textarea:focus {
+  box-shadow: none;
+}
+
+.composerBottomRow {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.composerControls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.settingControl {
+  position: relative;
+}
+
+.settingButton {
+  align-items: center;
+  background: #f5f3f3;
+  border: 1px solid rgba(0, 27, 68, 0.06);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.settingButton:hover,
+.settingButton[aria-expanded="true"] {
+  background: #ffffff;
+  border-color: rgba(99, 91, 255, 0.28);
+  color: var(--navy);
+}
+
+.settingButton small {
+  color: #8a9ab4;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.primarySettingButton {
+  background: #eef0ff;
+  color: #635bff;
+}
+
+.settingMenu {
+  background: #ffffff;
+  border: 1px solid rgba(0, 27, 68, 0.08);
+  border-radius: 14px;
+  bottom: calc(100% + 8px);
+  box-shadow: 0 18px 42px rgba(0, 27, 68, 0.14);
+  display: grid;
+  gap: 4px;
+  left: 0;
+  min-width: 164px;
+  padding: 8px;
+  position: absolute;
+  z-index: 8;
+}
+
+.settingMenu button {
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  color: var(--muted-strong);
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 36px;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.settingMenu button:hover,
+.settingOptionActive {
+  background: #eef0ff;
+  color: #635bff;
+}
+
+.composerActionGroup {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12px;
+}
+
+.queueCounter,
+.queueFullText {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.queueFullText {
+  color: #b91c1c;
+}
+
+.generateButton {
+  align-items: center;
+  background: #eef0f4;
+  border: 0;
+  border-radius: 18px;
+  color: #8a9ab4;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 800;
+  gap: 8px;
+  height: 50px;
+  justify-content: center;
+  min-width: 142px;
+}
+
+.generateButton:not(:disabled) {
+  background: var(--navy);
+  color: #ffffff;
+}
+
+.generateButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.inlineIcon {
+  flex: 0 0 auto;
+  height: 20px;
+  width: 20px;
+}
+
+@media (max-width: 1100px) {
+  .imageToolBody {
+    margin-inline: -36px;
+  }
+
+  .imageGallery {
+    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    padding-inline: 10px;
+  }
+
+  .promptComposer {
+    left: calc(250px + ((100vw - 250px) / 2));
+    width: min(calc(100% - 32px), 820px);
+  }
+
+  .composerControls {
+    justify-content: flex-start;
+    max-width: 100%;
+    overflow: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .imageToolBody {
+    margin: -44px -20px -72px;
+    min-height: calc(100vh - 82px);
+  }
+
+  .imageGallery {
+    gap: 10px;
+    grid-template-columns: repeat(2, minmax(132px, 1fr));
+    min-height: calc(100vh - 82px);
+    padding: 10px 10px 230px;
+  }
+
+  .promptComposer {
+    left: 50%;
+    padding: 16px;
+    width: min(calc(100% - 28px), 520px);
+  }
+
+  .composerPromptRow {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .addReferenceButton {
+    height: 54px;
+    width: 54px;
+  }
+
+  .composerBottomRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .composerActionGroup {
+    justify-content: space-between;
+  }
+
+  .generateButton {
+    height: 56px;
+  }
+
+  .imageViewerBackdrop {
+    padding: 14px;
+  }
+
+  .imageViewer {
+    max-height: calc(100vh - 28px);
+    max-width: calc(100vw - 28px);
+  }
+
+  .imageViewerHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .imageViewerActions {
+    justify-content: space-between;
+  }
+}

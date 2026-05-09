@@ -12,6 +12,21 @@ export type PlaceholderPageCopy = {
 };
 
 export const placeholderPages: Record<PlaceholderPageKey, PlaceholderPageCopy> = {
+  resources: {
+    label: "TÀI NGUYÊN",
+    heading: "Tài nguyên",
+    subtext:
+      "Kho lưu trữ toàn bộ ảnh và video đã tạo từ các công cụ AI trong hệ thống.",
+    panelDescription:
+      "Trang Tài nguyên dùng để quản lý, xem lại, tải xuống và tái sử dụng media đã tạo.",
+    icon: "doc",
+    cards: [
+      { title: "Ảnh đã tạo", description: "Lưu ảnh sản phẩm, banner, mockup và visual từ công cụ tạo ảnh AI." },
+      { title: "Video đã tạo", description: "Lưu video product, video social và bản dựng từ công cụ tạo video AI." },
+      { title: "Tải xuống", description: "Tải lại media đã tạo để đăng tải hoặc chỉnh sửa tiếp." },
+      { title: "Quản lý media", description: "Tìm kiếm, lọc và sắp xếp tài nguyên theo loại tệp hoặc công cụ tạo." }
+    ]
+  },
   tools: {
     label: "CÔNG CỤ AI",
     heading: "Công cụ AI",
@@ -21,22 +36,10 @@ export const placeholderPages: Record<PlaceholderPageKey, PlaceholderPageCopy> =
       "Các công cụ AI đang được hoàn thiện. Bạn có thể xem trước cấu trúc tính năng bên dưới và quay lại khi phiên bản đầu tiên sẵn sàng.",
     icon: "spark",
     cards: [
-      {
-        title: "Tạo ảnh AI",
-        description: "Tạo ảnh từ prompt, ý tưởng hoặc mô tả sản phẩm."
-      },
-      {
-        title: "Tạo video AI",
-        description: "Biến kịch bản ngắn thành video, cảnh quay và nội dung social."
-      },
-      {
-        title: "Viết nội dung AI",
-        description: "Tạo caption, bài viết, hook và nội dung quảng cáo nhanh hơn."
-      },
-      {
-        title: "Tự động hóa nội dung",
-        description: "Thiết lập quy trình tạo nội dung lặp lại cho nhiều kênh."
-      }
+      { title: "Tạo ảnh AI", description: "Tạo ảnh từ prompt, ý tưởng hoặc mô tả sản phẩm." },
+      { title: "Tạo video AI", description: "Biến kịch bản ngắn thành video, cảnh quay và nội dung social." },
+      { title: "Viết nội dung AI", description: "Tạo caption, bài viết, hook và nội dung quảng cáo nhanh hơn." },
+      { title: "Tự động hóa nội dung", description: "Thiết lập quy trình tạo nội dung lặp lại cho nhiều kênh." }
     ]
   },
   chatbotPrompt: {
@@ -65,13 +68,13 @@ export const placeholderPages: Record<PlaceholderPageKey, PlaceholderPageCopy> =
       }
     ]
   },
-  freePrompts: {
-    label: "PROMPT MIỄN PHÍ",
-    heading: "Prompt miễn phí",
+  promptLibrary: {
+    label: "THƯ VIỆN PROMPT",
+    heading: "Thư viện Prompt",
     subtext:
-      "Thư viện prompt miễn phí giúp bạn bắt đầu nhanh với viết nội dung, tạo hình ảnh, chatbot và quảng cáo.",
+      "Thư viện prompt giúp bạn bắt đầu nhanh với viết nội dung, tạo hình ảnh, chatbot và quảng cáo.",
     panelDescription:
-      "Thư viện prompt miễn phí đang được hoàn thiện. Bạn có thể xem trước các nhóm prompt dự kiến bên dưới.",
+      "Thư viện Prompt đang được hoàn thiện. Bạn có thể xem trước các nhóm prompt miễn phí và template dự kiến bên dưới.",
     icon: "doc",
     cards: [
       {
@@ -96,27 +99,15 @@ export const placeholderPages: Record<PlaceholderPageKey, PlaceholderPageCopy> =
     label: "GIỚI THIỆU",
     heading: "Giới thiệu",
     subtext:
-      "Tìm hiểu về nền tảng, định hướng sản phẩm và cách AI STUDIO hỗ trợ quy trình sáng tạo AI.",
+      "Tìm hiểu về nền tảng, định hướng sản phẩm và cách AI APPS hỗ trợ quy trình sáng tạo AI.",
     panelDescription:
       "Trang giới thiệu đang được hoàn thiện. Bạn có thể xem trước cấu trúc nội dung dự kiến bên dưới.",
     icon: "info",
     cards: [
-      {
-        title: "Sứ mệnh",
-        description: "Giúp mọi người tạo nội dung AI nhanh, dễ dùng và có chất lượng cao."
-      },
-      {
-        title: "Nền tảng",
-        description: "Tập trung vào công cụ tạo ảnh, video, prompt và chatbot cho creator."
-      },
-      {
-        title: "Lộ trình sản phẩm",
-        description: "Các tính năng mới sẽ được mở dần theo từng nhóm công cụ."
-      },
-      {
-        title: "Hỗ trợ người dùng",
-        description: "Tài liệu, hướng dẫn và template sẽ được bổ sung trong các phiên bản tới."
-      }
+      { title: "Sứ mệnh", description: "Giúp mọi người tạo nội dung AI nhanh, dễ dùng và có chất lượng cao." },
+      { title: "Nền tảng", description: "Tập trung vào công cụ tạo ảnh, video, prompt và chatbot cho creator." },
+      { title: "Lộ trình sản phẩm", description: "Các tính năng mới sẽ được mở dần theo từng nhóm công cụ." },
+      { title: "Hỗ trợ người dùng", description: "Tài liệu, hướng dẫn và template sẽ được bổ sung trong các phiên bản tới." }
     ]
   },
   pricing: {
@@ -142,7 +133,7 @@ export const placeholderPages: Record<PlaceholderPageKey, PlaceholderPageCopy> =
       },
       {
         title: "Gói Business",
-        description: "Quyền lợi nâng cao, hỗ trợ ưu tiên và tuỳ chỉnh theo nhu cầu doanh nghiệp."
+        description: "Quyền lợi nâng cao, hỗ trợ ưu tiên và tùy chỉnh theo nhu cầu doanh nghiệp."
       }
     ]
   }
