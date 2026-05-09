@@ -1,28 +1,51 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { topNavItems } from "../shell-navigation";
-import type { PageKey } from "@/shared/types/navigation";
 import styles from "./app-shell.module.css";
 
-export function TopNav({
-  activePage,
-  onNavigate
-}: {
-  activePage: PageKey;
-  onNavigate: (page: PageKey) => void;
-}) {
+function isActivePath(pathname: string, href: string) {
+  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export function TopNav() {
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <header className={styles.topNav}>
-      <nav className={styles.topLinks} aria-label="Điều hướng đầu trang">
+      <button
+        aria-controls="top-navigation"
+        aria-expanded={isMobileMenuOpen}
+        aria-label={isMobileMenuOpen ? "Đóng menu" : "Mở menu"}
+        className={styles.mobileMenuButton}
+        onClick={() => setIsMobileMenuOpen((currentValue) => !currentValue)}
+        type="button"
+      >
+        <span />
+        <span />
+        <span />
+      </button>
+
+      <nav
+        aria-label="Điều hướng đầu trang"
+        className={`${styles.topLinks} ${isMobileMenuOpen ? styles.topLinksOpen : ""}`}
+        id="top-navigation"
+      >
         {topNavItems.map((item) => (
-          <button
-            className={`${styles.topLink} ${activePage === item.key ? styles.topLinkActive : ""}`}
+          <Link
+            className={`${styles.topLink} ${isActivePath(pathname, item.href) ? styles.topLinkActive : ""}`}
+            href={item.href}
             key={item.key}
-            onClick={() => onNavigate(item.key)}
-            type="button"
+            onClick={() => setIsMobileMenuOpen(false)}
           >
             {item.label}
-          </button>
+          </Link>
         ))}
       </nav>
+
       <button className={styles.loginButton} type="button">
         Đăng ký / Đăng nhập
       </button>

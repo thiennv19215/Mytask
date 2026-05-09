@@ -1,5 +1,5 @@
-import { AppShell } from "@/features/app-shell/components/app-shell";
+import { HomeMainBody } from "@/features/home/components/home-main-body";
 
 export default function HomePage() {
-  return <AppShell />;
+  return <HomeMainBody />;
 }
