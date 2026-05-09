@@ -1,8 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AppsIcon } from "../../../components/apps-icons";
 import { createImageJob } from "@/features/generation/generation-api";
+import { dispatchUseImageForVideoEvent } from "@/features/generation/generation-events";
+import { useHydrateGenerationHistory } from "@/features/generation/generation-history";
 import { upsertGenerationJob, useGenerationJobs } from "@/features/generation/generation-store";
 import { startJobPolling } from "@/features/generation/polling-manager";
 import { countActiveGenerationJobs, isGenerationActive } from "@/features/generation/generation-status";
@@ -19,8 +22,6 @@ const settingOptions = {
 };
 
 const draggedResultImageMimeType = "application/x-genjob-result-image";
-const queueFullMessage = "Ban thao tac qua nhanh, vui long cho mot chut.";
-
 type SettingKey = keyof typeof settingOptions;
 
 type ReferenceImage = {
@@ -103,6 +104,9 @@ function getImageLoadingLabel(status: string | null | undefined) {
 }
 
 export function ImageGeneratorMainBody() {
+  useHydrateGenerationHistory("image");
+  const router = useRouter();
+
   const [prompt, setPrompt] = useState("");
   const [openSetting, setOpenSetting] = useState<SettingKey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -208,6 +212,27 @@ export function ImageGeneratorMainBody() {
     link.target = "_blank";
     link.rel = "noreferrer";
     link.click();
+  }
+
+  function handleUseImageForVideo(
+    event: React.MouseEvent<HTMLButtonElement>,
+    image: { id: string | null; prompt: string | null; resultUrl: string | null }
+  ) {
+    event.stopPropagation();
+
+    if (!image.resultUrl) {
+      return;
+    }
+
+    dispatchUseImageForVideoEvent({
+      originalUrl: image.resultUrl,
+      payloadUrl: getPayloadImageUrl(image.resultUrl),
+      previewUrl: getPreviewImageUrl(image.resultUrl),
+      source: "image-result",
+      prompt: image.prompt,
+      jobId: image.id
+    });
+    router.push("/apps/video-generator");
   }
 
   function addResultImageAsReference(resultImage: DraggedResultImage) {
@@ -403,6 +428,20 @@ export function ImageGeneratorMainBody() {
                     >
                       <AppsIcon compact name="download" />
                     </button>
+                    <button
+                      aria-label="Use generated image for video"
+                      className={styles.useForVideoButton}
+                      onClick={(event) =>
+                        handleUseImageForVideo(event, {
+                          id: item.id,
+                          prompt: item.prompt,
+                          resultUrl: item.resultUrl ?? ""
+                        })
+                      }
+                      type="button"
+                    >
+                      <AppsIcon compact name="video" />
+                    </button>
                   </>
                 ) : statusKind === "pending" ? (
                   <div aria-label="Image is generating" className={styles.tileLoading} role="status">
@@ -550,9 +589,6 @@ export function ImageGeneratorMainBody() {
             ))}
           </div>
           <div className={styles.composerActionGroup}>
-            <span className={isImageQueueFull ? styles.queueFullText : styles.queueCounter}>
-              {isImageQueueFull ? queueFullMessage : `Queue ${imageQueueCount}/4`}
-            </span>
             <button
               className={styles.generateButton}
               disabled={!prompt.trim() || isImageQueueFull || hasUploadingReferences}

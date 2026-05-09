@@ -1,8 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppsIcon } from "../../../components/apps-icons";
 import { createVideoJob } from "@/features/generation/generation-api";
+import {
+  useImageForVideoEventName,
+  useImageForVideoStorageKey,
+  type UseImageForVideoDetail
+} from "@/features/generation/generation-events";
+import { useHydrateGenerationHistory } from "@/features/generation/generation-history";
 import { upsertGenerationJob, useGenerationJobs } from "@/features/generation/generation-store";
 import { startJobPolling } from "@/features/generation/polling-manager";
 import { countActiveGenerationJobs, isGenerationActive } from "@/features/generation/generation-status";
@@ -10,8 +16,6 @@ import type { GenerationAspectRatio, GenerationJob } from "@/features/generation
 import { uploadImage } from "@/features/uploads/upload-api";
 import { getPayloadImageUrl, getPreviewImageUrl } from "@/features/uploads/upload-image-url";
 import styles from "./video-generator-main-body.module.css";
-
-const queueFullMessage = "Ban thao tac qua nhanh, vui long cho mot chut.";
 
 type VideoCard = {
   id: string;
@@ -91,6 +95,8 @@ function mapJobToVideoCard(job: GenerationJob): VideoCard {
 }
 
 export function VideoGeneratorMainBody() {
+  useHydrateGenerationHistory("video");
+
   const [activeMode, setActiveMode] = useState("Create Video");
   const [segment, setSegment] = useState("Frame");
   const [prompt, setPrompt] = useState("");
@@ -101,6 +107,7 @@ export function VideoGeneratorMainBody() {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [optimisticVideos, setOptimisticVideos] = useState<VideoCard[]>([]);
   const [referenceImages, setReferenceImages] = useState<Array<ReferenceImage | null>>([null, null]);
+  const [frameMessage, setFrameMessage] = useState("");
   const startFrameInputRef = useRef<HTMLInputElement>(null);
   const endFrameInputRef = useRef<HTMLInputElement>(null);
   const videoJobs = useGenerationJobs("video");
@@ -117,6 +124,67 @@ export function VideoGeneratorMainBody() {
   const hasUploadingReferences = referenceImages.some((image) => image?.status === "uploading");
   const videoQueueCount = countActiveGenerationJobs([...visibleOptimisticVideos, ...generatedVideos]);
   const isVideoQueueFull = videoQueueCount >= 4;
+
+  function addImageResultReference(detail: UseImageForVideoDetail) {
+    if (!detail.originalUrl || !detail.payloadUrl || !detail.previewUrl) {
+      return;
+    }
+
+    const referenceImage: ReferenceImage = {
+      id: crypto.randomUUID(),
+      fileName: detail.prompt?.trim() || "Generated image",
+      originalUrl: detail.originalUrl,
+      payloadUrl: detail.payloadUrl,
+      previewUrl: detail.previewUrl,
+      key: detail.jobId ? `image-result-${detail.jobId}` : `image-result-${Date.now()}`,
+      status: "ready"
+    };
+
+    setReferenceImages((images) => {
+      const duplicateIndex = images.findIndex((image) => image?.originalUrl === detail.originalUrl);
+
+      if (duplicateIndex >= 0) {
+        setFrameMessage(duplicateIndex === 0 ? "Anh nay da nam o Start frame." : "Anh nay da nam o End frame.");
+        return images;
+      }
+
+      const emptyIndex = images.findIndex((image) => !image);
+      const targetIndex = emptyIndex >= 0 ? emptyIndex : 1;
+      const nextImages = [...images];
+      nextImages[targetIndex] = referenceImage;
+
+      setFrameMessage(
+        targetIndex === 0
+          ? "Da dua anh ket qua sang Start frame."
+          : emptyIndex >= 0
+            ? "Da dua anh ket qua sang End frame."
+            : "Da du 2 anh reference, anh ket qua da thay End frame."
+      );
+
+      return nextImages;
+    });
+  }
+
+  useEffect(() => {
+    const pendingRaw = window.sessionStorage.getItem(useImageForVideoStorageKey);
+
+    if (pendingRaw) {
+      window.sessionStorage.removeItem(useImageForVideoStorageKey);
+
+      try {
+        addImageResultReference(JSON.parse(pendingRaw) as UseImageForVideoDetail);
+      } catch {
+        setFrameMessage("Khong doc duoc anh ket qua vua chuyen sang.");
+      }
+    }
+
+    function handleUseImageForVideo(event: Event) {
+      addImageResultReference((event as CustomEvent<UseImageForVideoDetail>).detail);
+    }
+
+    window.addEventListener(useImageForVideoEventName, handleUseImageForVideo);
+    return () => window.removeEventListener(useImageForVideoEventName, handleUseImageForVideo);
+  }, []);
 
   async function handleCreateVideo(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -299,6 +367,7 @@ export function VideoGeneratorMainBody() {
             {renderUploadBox(0, "Start frame", startFrameInputRef)}
             {renderUploadBox(1, "End frame", endFrameInputRef)}
           </div>
+          {frameMessage ? <p className={styles.frameMessage}>{frameMessage}</p> : null}
 
           <label className={styles.fieldGroup}>
             <span>Prompt</span>
@@ -346,12 +415,6 @@ export function VideoGeneratorMainBody() {
                 </select>
               </label>
             </div>
-          </div>
-
-          <div className={styles.queueStatusRow}>
-            <span className={isVideoQueueFull ? styles.queueFullText : styles.queueCounter}>
-              {isVideoQueueFull ? queueFullMessage : `Queue ${videoQueueCount}/4`}
-            </span>
           </div>
 
           <button

@@ -359,6 +359,18 @@
   outline: 0;
 }
 
+.frameMessage {
+  background: #eef2ff;
+  border: 1px solid rgba(99, 91, 255, 0.18);
+  border-radius: 12px;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: -2px 0 0;
+  padding: 9px 10px;
+}
+
 .fieldGroup {
   display: grid;
   gap: 6px;
@@ -482,26 +494,6 @@
   justify-content: center;
   min-height: 48px;
   padding: 0 18px;
-}
-
-.queueStatusRow {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  min-height: 18px;
-}
-
-.queueCounter,
-.queueFullText {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 900;
-  line-height: 1.25;
-  text-align: center;
-}
-
-.queueFullText {
-  color: #b91c1c;
 }
 
 .primaryButton svg {

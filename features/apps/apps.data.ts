@@ -37,7 +37,7 @@ export const appsTools: AppsTool[] = [
     description: "Dùng khung hình, prompt và motion control để tạo preview video ngắn.",
     href: "/apps/video-generator",
     category: "video",
-    status: "beta",
+    status: "available",
     badge: "NEW",
     ctaLabel: "Mở công cụ",
     previewType: "video",

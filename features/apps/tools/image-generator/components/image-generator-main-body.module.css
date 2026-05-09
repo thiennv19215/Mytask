@@ -113,7 +113,8 @@
   z-index: 0;
 }
 
-.downloadImageButton {
+.downloadImageButton,
+.useForVideoButton {
   align-items: center;
   backdrop-filter: blur(16px);
   background: rgba(255, 255, 255, 0.88);
@@ -136,13 +137,24 @@
   z-index: 3;
 }
 
-.downloadImageButton svg {
+.downloadImageButton {
+  right: 12px;
+}
+
+.useForVideoButton {
+  right: 62px;
+}
+
+.downloadImageButton svg,
+.useForVideoButton svg {
   height: 19px;
   width: 19px;
 }
 
 .downloadImageButton:hover,
-.downloadImageButton:focus-visible {
+.downloadImageButton:focus-visible,
+.useForVideoButton:hover,
+.useForVideoButton:focus-visible {
   background: var(--navy);
   color: #ffffff;
   outline: 0;
@@ -700,18 +712,6 @@
   display: flex;
   flex: 0 0 auto;
   gap: 12px;
-}
-
-.queueCounter,
-.queueFullText {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 900;
-  white-space: nowrap;
-}
-
-.queueFullText {
-  color: #b91c1c;
 }
 
 .generateButton {

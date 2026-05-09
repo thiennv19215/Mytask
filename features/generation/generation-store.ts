@@ -48,6 +48,28 @@ export function upsertGenerationJob(job: GenerationJob) {
   emitChange();
 }
 
+export function removeGenerationJob(jobId: string) {
+  const nextJobs = state.jobs.filter((job) => job.id !== jobId);
+
+  if (nextJobs.length === state.jobs.length) {
+    return;
+  }
+
+  state.jobs = nextJobs;
+  emitChange();
+}
+
+export function removeGenerationJobs(predicate: (job: GenerationJob) => boolean) {
+  const nextJobs = state.jobs.filter((job) => !predicate(job));
+
+  if (nextJobs.length === state.jobs.length) {
+    return;
+  }
+
+  state.jobs = nextJobs;
+  emitChange();
+}
+
 export function useGenerationJobs(type?: string) {
   const jobs = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   return type ? jobs.filter((job) => job.type === type) : jobs;
