@@ -2,7 +2,7 @@
   background: var(--background);
   display: flex;
   height: 100vh;
-  min-height: 760px;
+  min-height: 700px;
   overflow: hidden;
   width: 100%;
 }
@@ -11,18 +11,18 @@
   background: #ffffff;
   border-right: 1px solid rgba(0, 27, 68, 0.06);
   display: flex;
-  flex: 0 0 312px;
+  flex: 0 0 var(--app-sidebar-width);
   flex-direction: column;
   justify-content: space-between;
-  padding: 28px 18px 18px;
+  padding: 24px 16px 16px;
   transition:
     flex-basis 0.2s ease,
     padding 0.2s ease;
 }
 
 .sidebarCollapsed {
-  flex-basis: 88px;
-  padding: 30px 16px 20px;
+  flex-basis: var(--app-sidebar-collapsed-width);
+  padding: 26px 14px 18px;
 }
 
 .sidebarMain {
@@ -40,11 +40,11 @@
   color: inherit;
   cursor: default;
   display: flex;
-  gap: 14px;
-  margin: 0 12px;
+  gap: 12px;
+  margin: 0 10px;
   padding: 0;
   text-align: left;
-  width: calc(100% - 24px);
+  width: calc(100% - 20px);
 }
 
 .brandCopy {
@@ -54,12 +54,12 @@
 
 .brandCopy strong {
   color: var(--navy);
-  font: 900 20px/1 Manrope, sans-serif;
+  font: 900 18px/1 Manrope, sans-serif;
 }
 
 .brandCopy span {
   color: #8a9ab4;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -69,9 +69,9 @@
   border-radius: 12px;
   color: #ffffff;
   display: grid;
-  height: 46px;
+  height: 42px;
   place-items: center;
-  width: 46px;
+  width: 42px;
 }
 
 .sidebarCollapsed {
@@ -84,10 +84,10 @@
 
 .sidebarStatus {
   color: var(--navy);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 900;
   line-height: 1.35;
-  margin: 14px 12px 28px;
+  margin: 12px 10px 22px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -96,14 +96,14 @@
 .sidebarDivider {
   background: rgba(0, 27, 68, 0.06);
   height: 1px;
-  margin: 28px 0 24px;
+  margin: 22px 0 18px;
   width: 100%;
 }
 
 .navGroup {
   display: grid;
-  gap: 8px;
-  margin-top: 26px;
+  gap: 6px;
+  margin-top: 22px;
 }
 
 .navGroup:first-of-type {
@@ -115,7 +115,7 @@
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.08em;
-  margin: 0 0 6px 20px;
+  margin: 0 0 5px 16px;
   text-transform: uppercase;
 }
 
@@ -138,9 +138,9 @@
   color: var(--muted);
   cursor: pointer;
   display: flex;
-  gap: 14px;
-  height: 44px;
-  padding: 0 18px;
+  gap: 12px;
+  height: 40px;
+  padding: 0 15px;
   text-decoration: none;
   text-align: left;
   transition:
@@ -174,10 +174,10 @@
   color: var(--navy);
   cursor: pointer;
   display: flex;
-  gap: 14px;
-  height: 46px;
+  gap: 12px;
+  height: 42px;
   justify-content: center;
-  padding: 0 14px;
+  padding: 0 12px;
   transition:
     background 0.18s ease,
     border-color 0.18s ease,
@@ -201,7 +201,7 @@
 .sidebarCollapsed .brandButton {
   justify-content: center;
   margin-inline: 0;
-  margin-bottom: 84px;
+  margin-bottom: 70px;
   width: 100%;
 }
 
@@ -222,7 +222,7 @@
 }
 
 .sidebarCollapsed .navGroup {
-  margin-top: 26px;
+  margin-top: 22px;
 }
 
 .sidebarCollapsed .navGroup:first-of-type {
@@ -235,7 +235,7 @@
 
 .sidebarFooter {
   border-top: 1px solid rgba(0, 27, 68, 0.06);
-  padding-top: 16px;
+  padding-top: 14px;
 }
 
 .sidebarCollapsed .sideNav {
@@ -245,10 +245,10 @@
 .sidebarCollapsed .navItem,
 .sidebarCollapsed .collapseButton {
   gap: 0;
-  height: 44px;
+  height: 40px;
   justify-content: center;
   padding: 0;
-  width: 52px;
+  width: 48px;
 }
 
 .sidebarCollapsed .navIcon {
@@ -266,16 +266,17 @@
   flex: 1;
   flex-direction: column;
   min-width: 0;
+  overflow: hidden;
 }
 
 .topNav {
   align-items: center;
   border-bottom: 1px solid rgba(0, 27, 68, 0.07);
   display: flex;
-  gap: 24px;
-  height: 78px;
+  gap: 20px;
+  height: var(--app-top-nav-height);
   justify-content: space-between;
-  padding: 0 64px;
+  padding: 0 52px;
   position: relative;
 }
 
@@ -283,7 +284,7 @@
   align-items: center;
   display: flex;
   flex: 1;
-  gap: 30px;
+  gap: 24px;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -300,7 +301,7 @@
   color: var(--muted);
   cursor: pointer;
   font-weight: 700;
-  padding: 28px 0 25px;
+  padding: 24px 0 21px;
   position: relative;
   text-decoration: none;
   transition:
@@ -344,8 +345,8 @@
   cursor: pointer;
   flex: 0 0 auto;
   font-weight: 800;
-  height: 46px;
-  padding: 0 28px;
+  height: 42px;
+  padding: 0 22px;
   transition:
     box-shadow 0.18s ease,
     transform 0.18s ease;
@@ -401,7 +402,7 @@
 .mainContent {
   flex: 1;
   overflow: auto;
-  padding: 74px 64px 88px;
+  padding: 58px 52px 72px;
 }
 
 @media (max-width: 1100px) {

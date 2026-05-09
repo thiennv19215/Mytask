@@ -1,8 +1,8 @@
 .productVideoBody {
   background: var(--surface-soft);
-  margin: -74px -64px -88px;
-  min-height: calc(100vh - 78px);
-  padding: 28px;
+  margin: -58px -52px -72px;
+  min-height: calc(100vh - var(--app-top-nav-height, 78px));
+  padding: 24px;
 }
 
 .heroHeader {
