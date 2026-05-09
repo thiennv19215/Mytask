@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AppsIcon } from "../../../components/apps-icons";
 import { createImageJob, createVideoJob } from "@/features/generation/generation-api";
-import { countActiveGenerationJobs, isGenerationActive } from "@/features/generation/generation-status";
+import { isGenerationActive } from "@/features/generation/generation-status";
 import { upsertGenerationJob, useGenerationJobs } from "@/features/generation/generation-store";
 import type { GenerationJob } from "@/features/generation/generation-types";
 import { startJobPolling } from "@/features/generation/polling-manager";
@@ -11,7 +11,7 @@ import { uploadImage } from "@/features/uploads/upload-api";
 import { getPayloadImageUrl, getPreviewImageUrl } from "@/features/uploads/upload-image-url";
 import styles from "./script-analyzer-main-body.module.css";
 
-const queueFullMessage = "Ban thao tac qua nhanh, vui long cho mot chut.";
+const batchRetryLimit = 2;
 
 type SceneStatus = "idle" | "creating" | "queued" | "processing" | "progress" | "success" | "failed";
 
@@ -28,6 +28,11 @@ type ReferenceImage = {
 
 type ScenarioSceneRow = {
   id: string;
+  sourceSceneId?: string;
+  title?: string;
+  subtitle?: string;
+  timingRange?: string;
+  voiceover?: string;
   imagePrompt: string;
   referenceImages: ReferenceImage[];
   imageJobId?: string;
@@ -42,24 +47,19 @@ type ScenarioSceneRow = {
   videoErrorMessage?: string;
 };
 
-const initialRows: ScenarioSceneRow[] = [
-  {
-    id: "scene-1",
-    imagePrompt: "Vertical product shot, clean studio lighting, main visual reference, premium ecommerce style.",
-    referenceImages: [],
-    imageStatus: "idle",
-    videoPrompt: "Slow push-in camera move, product reveal, clean light, social ad pacing.",
-    videoStatus: "idle"
-  },
-  {
-    id: "scene-2",
-    imagePrompt: "Second vertical scene using the same product identity, show the main benefit in context.",
-    referenceImages: [],
-    imageStatus: "idle",
-    videoPrompt: "Animate the benefit with a smooth before-after transition and soft camera movement.",
-    videoStatus: "idle"
-  }
-];
+type ProductionSceneInput = {
+  scene_id?: number | string;
+  title?: string;
+  subtitle?: string;
+  timing_range?: string;
+  voiceover_vn?: string;
+  banana_2_image_prompt?: string;
+  image_prompt?: string;
+  motion_instruction?: string;
+  video_prompt?: string;
+};
+
+const initialRows: ScenarioSceneRow[] = [];
 
 function normalizeSceneStatus(status: string | null | undefined): SceneStatus {
   const normalizedStatus = String(status ?? "").toLowerCase();
@@ -95,30 +95,94 @@ function createEmptyScene(): ScenarioSceneRow {
   };
 }
 
+function asCleanString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getSceneSortValue(scene: ProductionSceneInput, index: number) {
+  const sceneId = Number(scene.scene_id);
+  return Number.isFinite(sceneId) ? sceneId : index + 1_000_000;
+}
+
+function buildVideoPromptFromJsonScene(scene: ProductionSceneInput) {
+  const voiceover = asCleanString(scene.voiceover_vn);
+  const motion = asCleanString(scene.motion_instruction);
+
+  if (voiceover && motion) {
+    return `Voiceover:\n${voiceover}\n\nMotion:\n${motion}`;
+  }
+
+  return motion || asCleanString(scene.video_prompt) || voiceover;
+}
+
+function mapProductionSceneToRow(scene: ProductionSceneInput): ScenarioSceneRow {
+  const title = asCleanString(scene.title);
+  const subtitle = asCleanString(scene.subtitle);
+  const voiceover = asCleanString(scene.voiceover_vn);
+  const fallbackImagePrompt = [title, subtitle, voiceover].filter(Boolean).join("\n");
+
+  return {
+    ...createEmptyScene(),
+    sourceSceneId: scene.scene_id === undefined || scene.scene_id === null ? undefined : String(scene.scene_id),
+    title: title || undefined,
+    subtitle: subtitle || undefined,
+    timingRange: asCleanString(scene.timing_range) || undefined,
+    voiceover: voiceover || undefined,
+    imagePrompt: asCleanString(scene.banana_2_image_prompt) || asCleanString(scene.image_prompt) || fallbackImagePrompt,
+    videoPrompt: buildVideoPromptFromJsonScene(scene)
+  };
+}
+
+function buildRowsFromPlainText(text: string) {
+  return text
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => ({
+      ...createEmptyScene(),
+      imagePrompt: line,
+      videoPrompt: `Motion and camera direction for this scene: ${line}`
+    }));
+}
+
+function buildRowsFromProductionJson(text: string) {
+  const parsed = JSON.parse(text) as { production_data?: unknown };
+
+  if (!Array.isArray(parsed.production_data)) {
+    throw new Error("JSON thieu production_data");
+  }
+
+  const rows = (parsed.production_data as ProductionSceneInput[])
+    .map((scene, index) => ({ scene, index }))
+    .sort((a, b) => getSceneSortValue(a.scene, a.index) - getSceneSortValue(b.scene, b.index))
+    .map(({ scene }) => mapProductionSceneToRow(scene))
+    .filter((row) => row.imagePrompt.trim() || row.videoPrompt.trim());
+
+  if (!rows.length) {
+    throw new Error("Khong tim thay prompt trong JSON");
+  }
+
+  return rows;
+}
+
 function canUseSceneOneReference(sceneOne: ScenarioSceneRow | undefined) {
   return sceneOne?.imageStatus === "success" && Boolean(sceneOne.imageResultUrl);
 }
 
-function getStepState(status: SceneStatus, isEnabled = true) {
-  if (!isEnabled) return "locked";
-  if (status === "success") return "done";
-  if (status === "failed") return "failed";
-  if (isGenerationActive(status)) return "active";
-  return "idle";
-}
-
-function getStepStateLabel(state: string) {
-  if (state === "done") return "Done";
-  if (state === "active") return "Running";
-  if (state === "failed") return "Failed";
-  if (state === "locked") return "Locked";
-  return "Ready";
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export function ScriptAnalyzerMainBody() {
   const [scriptDraft, setScriptDraft] = useState("");
+  const [scriptErrorMessage, setScriptErrorMessage] = useState("");
+  const [isScriptModalOpen, setIsScriptModalOpen] = useState(false);
   const [rows, setRows] = useState<ScenarioSceneRow[]>(initialRows);
   const [pendingSequentialRowIds, setPendingSequentialRowIds] = useState<string[]>([]);
+  const [isBatchRunning, setIsBatchRunning] = useState(false);
+  const [batchActiveSceneIds, setBatchActiveSceneIds] = useState<string[]>([]);
+  const resolvedRowsRef = useRef<ScenarioSceneRow[]>([]);
+  const batchRunningRef = useRef(false);
   const imageJobs = useGenerationJobs("image");
   const videoJobs = useGenerationJobs("video");
 
@@ -143,18 +207,14 @@ export function ScriptAnalyzerMainBody() {
   const sceneOne = resolvedRows[0];
   const hasSceneOneReference = canUseSceneOneReference(sceneOne);
   const successfulVideos = videoJobs.filter((job) => job.status === "success" && job.resultUrl);
-  const localImageActiveRows = rows.filter((row) => !row.imageJobId && isGenerationActive(row.imageStatus));
-  const localVideoActiveRows = rows.filter((row) => !row.videoJobId && isGenerationActive(row.videoStatus));
-  const imageQueueCount = countActiveGenerationJobs([
-    ...imageJobs,
-    ...localImageActiveRows.map((row) => ({ status: row.imageStatus }))
-  ]);
-  const videoQueueCount = countActiveGenerationJobs([
-    ...videoJobs,
-    ...localVideoActiveRows.map((row) => ({ status: row.videoStatus }))
-  ]);
-  const isImageQueueFull = imageQueueCount >= 4;
-  const isVideoQueueFull = videoQueueCount >= 4;
+  const canRunAllScenes =
+    !isBatchRunning &&
+    resolvedRows.some((row) => row.imagePrompt.trim()) &&
+    !resolvedRows.some((row) => row.referenceImages.some((image) => image.status === "uploading"));
+
+  useEffect(() => {
+    resolvedRowsRef.current = resolvedRows;
+  }, [resolvedRows]);
 
   useEffect(() => {
     for (const rowId of pendingSequentialRowIds) {
@@ -186,36 +246,52 @@ export function ScriptAnalyzerMainBody() {
   }
 
   function removeScene(rowId: string) {
-    setRows((items) => (items.length > 1 ? items.filter((item) => item.id !== rowId) : items));
+    setRows((items) => items.filter((item) => item.id !== rowId));
     setPendingSequentialRowIds((items) => items.filter((item) => item !== rowId));
   }
 
   function buildRowsFromScript() {
-    const nextRows = scriptDraft
-      .split(/\n+/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => ({
-        ...createEmptyScene(),
-        imagePrompt: `Vertical 9:16 storyboard image: ${line}`,
-        videoPrompt: `Motion and camera direction for this scene: ${line}`
-      }));
+    const input = scriptDraft.trim();
+
+    if (!input) {
+      setScriptErrorMessage("Nhap text hoac JSON truoc khi tach canh");
+      return;
+    }
+
+    let nextRows: ScenarioSceneRow[];
+
+    try {
+      nextRows = input.startsWith("{") || input.startsWith("[") ? buildRowsFromProductionJson(input) : buildRowsFromPlainText(input);
+    } catch (error) {
+      if (input.startsWith("{") || input.startsWith("[")) {
+        setScriptErrorMessage(error instanceof Error ? error.message : "JSON khong hop le");
+        return;
+      }
+
+      nextRows = buildRowsFromPlainText(input);
+    }
 
     if (nextRows.length) {
-      setRows(nextRows);
+      setRows((items) => [...items, ...nextRows]);
+      setScriptDraft("");
+      setScriptErrorMessage("");
+      setIsScriptModalOpen(false);
     }
   }
 
   function markDependentScenesDirty(rowId: string) {
-    const sceneOneId = rows[0]?.id;
+    const resolvedRows = resolvedRowsRef.current;
+    const sceneOneId = resolvedRows[0]?.id;
 
     if (rowId !== sceneOneId) {
       return;
     }
 
+    const dirtyRowIds = new Set(resolvedRows.filter((item, index) => index > 0 && item.imageResultUrl).map((item) => item.id));
+
     setRows((items) =>
-      items.map((item, index) =>
-        index > 0 && item.imageResultUrl
+      items.map((item) =>
+        dirtyRowIds.has(item.id)
           ? {
               ...item,
               imageDirty: true
@@ -328,9 +404,10 @@ export function ScriptAnalyzerMainBody() {
 
   function getImagePayloadUrls(row: ScenarioSceneRow, rowIndex: number) {
     const urls = row.referenceImages.filter((image) => image.status === "ready").map((image) => image.payloadUrl);
+    const currentSceneOne = resolvedRowsRef.current[0] ?? sceneOne;
 
-    if (rowIndex > 0 && sceneOne?.imageResultUrl) {
-      urls.unshift(getPayloadImageUrl(sceneOne.imageResultUrl));
+    if (rowIndex > 0 && currentSceneOne?.imageResultUrl) {
+      urls.unshift(getPayloadImageUrl(currentSceneOne.imageResultUrl));
     }
 
     return urls;
@@ -339,11 +416,11 @@ export function ScriptAnalyzerMainBody() {
   async function createImageForRow(row: ScenarioSceneRow, rowIndex: number) {
     const prompt = row.imagePrompt.trim();
 
-    if (!prompt || isImageQueueFull || row.referenceImages.some((image) => image.status === "uploading")) {
+    if (!prompt || row.referenceImages.some((image) => image.status === "uploading") || isGenerationActive(row.imageStatus)) {
       return false;
     }
 
-    if (rowIndex > 0 && !hasSceneOneReference) {
+    if (rowIndex > 0 && !canUseSceneOneReference(resolvedRowsRef.current[0] ?? sceneOne)) {
       updateRow(row.id, {
         imageErrorMessage: "Can tao thanh cong anh canh 1 truoc de lam reference chinh"
       });
@@ -390,7 +467,7 @@ export function ScriptAnalyzerMainBody() {
   async function createVideoForRow(row: ScenarioSceneRow) {
     const prompt = row.videoPrompt.trim();
 
-    if (!prompt || isVideoQueueFull || row.imageStatus !== "success" || !row.imageResultUrl || isGenerationActive(row.videoStatus)) {
+    if (!prompt || row.imageStatus !== "success" || !row.imageResultUrl || isGenerationActive(row.videoStatus)) {
       return false;
     }
 
@@ -428,6 +505,158 @@ export function ScriptAnalyzerMainBody() {
     }
   }
 
+  function getCurrentRow(rowId: string) {
+    return resolvedRowsRef.current.find((row) => row.id === rowId);
+  }
+
+  async function waitForImageDone(rowId: string) {
+    while (batchRunningRef.current) {
+      const row = getCurrentRow(rowId);
+
+      if (!row) {
+        throw new Error("Scene khong con ton tai");
+      }
+
+      if (row.imageStatus === "success" && row.imageResultUrl) {
+        return row;
+      }
+
+      if (row.imageStatus === "failed") {
+        throw new Error(row.imageErrorMessage || "Create image failed");
+      }
+
+      await wait(800);
+    }
+
+    throw new Error("Batch stopped");
+  }
+
+  async function createSceneOneImageForBatch() {
+    const firstRow = resolvedRowsRef.current[0];
+
+    if (!firstRow?.imagePrompt.trim()) {
+      throw new Error("Scene 1 can co Image prompt");
+    }
+
+    for (let retry = 0; retry <= batchRetryLimit; retry += 1) {
+      const latestRow = getCurrentRow(firstRow.id);
+
+      if (!latestRow) {
+        throw new Error("Scene 1 khong con ton tai");
+      }
+
+      if (latestRow.imageStatus === "success" && latestRow.imageResultUrl) {
+        return latestRow;
+      }
+
+      if (!isGenerationActive(latestRow.imageStatus)) {
+        setBatchActiveSceneIds([latestRow.id]);
+
+        const started = await createImageForRow(latestRow, 0);
+
+        if (!started) {
+          throw new Error(latestRow.imageErrorMessage || "Khong the tao anh Scene 1");
+        }
+      }
+
+      try {
+        return await waitForImageDone(latestRow.id);
+      } catch (error) {
+        if (retry >= batchRetryLimit) {
+          throw error;
+        }
+      }
+    }
+
+    throw new Error("Scene 1 image failed");
+  }
+
+  async function handleRunAllScenes() {
+    if (batchRunningRef.current || !canRunAllScenes) {
+      return;
+    }
+
+    batchRunningRef.current = true;
+    setIsBatchRunning(true);
+    setBatchActiveSceneIds([]);
+
+    const imageRetryCounts = new Map<string, number>();
+    const skippedImageRowIds = new Set<string>();
+    const completedVideoRowIds = new Set<string>();
+
+    try {
+      await createSceneOneImageForBatch();
+
+      while (batchRunningRef.current) {
+        const currentRows = resolvedRowsRef.current.filter((row) => row.imagePrompt.trim());
+        for (const row of currentRows) {
+          const retryCount = imageRetryCounts.get(row.id) ?? 0;
+
+          if (row.imageStatus === "failed") {
+            if (retryCount < batchRetryLimit) {
+              imageRetryCounts.set(row.id, retryCount + 1);
+              skippedImageRowIds.delete(row.id);
+            } else {
+              skippedImageRowIds.add(row.id);
+            }
+          }
+
+          if (
+            !skippedImageRowIds.has(row.id) &&
+            row.imageStatus !== "success" &&
+            !isGenerationActive(row.imageStatus)
+          ) {
+            const rowIndex = currentRows.findIndex((item) => item.id === row.id);
+
+            setBatchActiveSceneIds([row.id]);
+            await createImageForRow(row, rowIndex);
+          }
+        }
+
+        for (const row of currentRows) {
+          const rowIndex = currentRows.findIndex((item) => item.id === row.id);
+
+          if (row.imageStatus === "success" && row.imageResultUrl && !row.videoPrompt.trim()) {
+            completedVideoRowIds.add(row.id);
+          }
+
+          if (row.videoStatus === "success" || row.videoStatus === "failed") {
+            completedVideoRowIds.add(row.id);
+          }
+
+          if (
+            row.imageStatus === "success" &&
+            row.imageResultUrl &&
+            row.videoPrompt.trim() &&
+            row.videoStatus !== "success" &&
+            !isGenerationActive(row.videoStatus)
+          ) {
+            setBatchActiveSceneIds([row.id]);
+            await createVideoForRow(row);
+          }
+        }
+
+        const currentRowsAfterWork = resolvedRowsRef.current.filter((row) => row.imagePrompt.trim());
+        const imageDone = currentRowsAfterWork.every(
+          (row) => (row.imageStatus === "success" && row.imageResultUrl) || skippedImageRowIds.has(row.id)
+        );
+        const videoDone = currentRowsAfterWork.every((row) => skippedImageRowIds.has(row.id) || completedVideoRowIds.has(row.id));
+
+        if (imageDone && videoDone) {
+          break;
+        }
+
+        await wait(900);
+      }
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : "Tao tat ca phan canh bi loi");
+    } finally {
+      batchRunningRef.current = false;
+      setIsBatchRunning(false);
+      setBatchActiveSceneIds([]);
+    }
+  }
+
   async function handleSequential(row: ScenarioSceneRow, rowIndex: number) {
     if (pendingSequentialRowIds.includes(row.id) || isGenerationActive(row.imageStatus) || isGenerationActive(row.videoStatus)) {
       return;
@@ -448,140 +677,159 @@ export function ScriptAnalyzerMainBody() {
   return (
     <section className={styles.storyboardPage} aria-label="Storyboard generator">
       <section aria-label="Storyboard workspace" className={styles.storyboardModal}>
-        <header className={styles.modalHeader}>
-          <div>
-            <p className={styles.eyebrow}>SCENES</p>
-            <h2>{resolvedRows.length} canh dang lam viec</h2>
-          </div>
-          <div className={styles.modalHeaderActions}>
-            <span className={isImageQueueFull ? styles.queueFull : ""}>Image queue {imageQueueCount}/4</span>
-            <span className={isVideoQueueFull ? styles.queueFull : ""}>Video queue {videoQueueCount}/4</span>
-            <button className={styles.secondaryButton} onClick={addScene} type="button">
-              Them canh
-            </button>
-          </div>
+        <header className={styles.storyboardHeader}>
+          <button className={styles.secondaryButton} onClick={() => setIsScriptModalOpen(true)} type="button">
+            Nhap kich ban
+          </button>
+          <button className={styles.primaryButton} disabled={!canRunAllScenes} onClick={() => void handleRunAllScenes()} type="button">
+            {isBatchRunning ? "Dang tao..." : "Tao tat ca"}
+          </button>
+          <button className={styles.secondaryButton} onClick={addScene} type="button">
+            Them canh
+          </button>
         </header>
 
-        <div className={styles.scriptBuilder}>
-          <label className={styles.fieldGroup}>
-            <span>Nhap kich ban nhanh</span>
-            <textarea
-              onChange={(event) => setScriptDraft(event.target.value)}
-              placeholder="Moi dong tao thanh mot canh..."
-              rows={3}
-              value={scriptDraft}
-            />
-          </label>
-          <button className={styles.secondaryButton} onClick={buildRowsFromScript} type="button">
-            Tach thanh canh
-          </button>
-        </div>
+        <div className={styles.storyboardTable} aria-label="Scenario scenes">
+          {resolvedRows.length ? (
+            <div className={styles.storyboardRows}>
+              {resolvedRows.map((row, index) => {
+              const hasUploadingReferences = row.referenceImages.some((image) => image.status === "uploading");
+              const needsSceneOne = index > 0 && !hasSceneOneReference;
+              const isRowRunning = isGenerationActive(row.imageStatus) || isGenerationActive(row.videoStatus) || batchActiveSceneIds.includes(row.id);
+              const canCreateImage = Boolean(row.imagePrompt.trim()) && !isGenerationActive(row.imageStatus) && !hasUploadingReferences && !needsSceneOne;
+              const canRunSequential =
+                Boolean(row.imagePrompt.trim()) &&
+                Boolean(row.videoPrompt.trim()) &&
+                !pendingSequentialRowIds.includes(row.id) &&
+                !isGenerationActive(row.imageStatus) &&
+                !isGenerationActive(row.videoStatus) &&
+                !hasUploadingReferences &&
+                !needsSceneOne;
 
-        <div className={styles.sceneList} aria-label="Scenario scenes">
-          {resolvedRows.map((row, index) => {
-            const hasUploadingReferences = row.referenceImages.some((image) => image.status === "uploading");
-            const needsSceneOne = index > 0 && !hasSceneOneReference;
-            const canCreateImage =
-              Boolean(row.imagePrompt.trim()) && !isImageQueueFull && !isGenerationActive(row.imageStatus) && !hasUploadingReferences && !needsSceneOne;
-            const canCreateVideo =
-              Boolean(row.videoPrompt.trim()) &&
-              row.imageStatus === "success" &&
-              Boolean(row.imageResultUrl) &&
-              !isVideoQueueFull &&
-              !isGenerationActive(row.videoStatus);
-            const canRunSequential =
-              Boolean(row.imagePrompt.trim()) &&
-              Boolean(row.videoPrompt.trim()) &&
-              !pendingSequentialRowIds.includes(row.id) &&
-              !isGenerationActive(row.imageStatus) &&
-              !isGenerationActive(row.videoStatus) &&
-              !hasUploadingReferences &&
-              !needsSceneOne;
-            const imagePromptState = row.imagePrompt.trim() ? "done" : "idle";
-            const imageResultState = getStepState(row.imageStatus);
-            const videoPromptState = row.imageStatus === "success" ? (row.videoPrompt.trim() ? "done" : "idle") : "locked";
-            const videoResultState = getStepState(row.videoStatus, row.imageStatus === "success");
-
-            return (
-              <article className={styles.sceneCard} data-dirty={row.imageDirty ? "true" : "false"} key={row.id}>
-                <header className={styles.sceneCardHeader}>
-                  <div className={styles.sceneHeaderMain}>
-                    <div className={styles.sceneTitleGroup}>
-                      <strong>Scene {index + 1}</strong>
-                      {index === 0 ? <span>Main ref</span> : null}
-                      {row.imageDirty ? <span>Outdated</span> : null}
+              return (
+                <article
+                  className={styles.storyboardRow}
+                  data-batch-active={batchActiveSceneIds.includes(row.id) ? "true" : "false"}
+                  data-dirty={row.imageDirty ? "true" : "false"}
+                  key={row.id}
+                >
+                  <header className={styles.sceneStripHeader}>
+                    <div className={styles.sceneCell}>
+                      <strong>{row.sourceSceneId ? `S${row.sourceSceneId}` : `S${index + 1}`}</strong>
+                      {index === 0 ? <span>Main ref</span> : <span>Ref S1</span>}
+                      {row.imageDirty ? <em>Outdated</em> : null}
+                      {row.timingRange ? <small>{row.timingRange}</small> : null}
+                      {row.title ? <small>{row.title}</small> : null}
                     </div>
-                    <div className={styles.sceneProgress} aria-label={`Scene ${index + 1} progress`}>
-                      {[imagePromptState, imageResultState, videoPromptState, videoResultState].map((state, stepIndex) => (
-                        <span data-state={state} key={`${row.id}-${stepIndex}`}>
-                          {stepIndex + 1}
-                        </span>
-                      ))}
+                    <div className={styles.rowActions}>
+                      <button className={styles.primaryButton} disabled={isRowRunning || !canCreateImage} onClick={() => void createImageForRow(row, index)} type="button">
+                        Tao anh
+                      </button>
+                      <button className={styles.secondaryButton} disabled={isRowRunning || !canRunSequential} onClick={() => void handleSequential(row, index)} type="button">
+                        Anh -&gt; video
+                      </button>
+                      <button aria-label={`Remove scene ${index + 1}`} className={styles.iconButton} onClick={() => removeScene(row.id)} type="button">
+                        x
+                      </button>
                     </div>
-                  </div>
-                  <div className={styles.rowActions}>
-                    <button className={styles.primaryButton} disabled={!canCreateImage} onClick={() => void createImageForRow(row, index)} type="button">
-                      Tao anh
-                    </button>
-                    <button className={styles.secondaryButton} disabled={!canCreateVideo} onClick={() => void createVideoForRow(row)} type="button">
-                      Tao video
-                    </button>
-                    <button className={styles.secondaryButton} disabled={!canRunSequential} onClick={() => void handleSequential(row, index)} type="button">
-                      Tao anh -&gt; video
-                    </button>
-                    {(isImageQueueFull || isVideoQueueFull) && <small>{queueFullMessage}</small>}
-                  </div>
-                  <button aria-label={`Remove scene ${index + 1}`} className={styles.iconButton} onClick={() => removeScene(row.id)} type="button">
-                    x
-                  </button>
-                </header>
+                  </header>
 
-                <div className={styles.scenePipelineGrid}>
-                  <section className={styles.pipelineCard} data-state={imagePromptState} data-step="input">
-                    <StepHeader label="Image prompt" number={1} state={imagePromptState} />
-                    <label className={styles.cellField}>
-                      <textarea onChange={(event) => updateRow(row.id, { imagePrompt: event.target.value })} rows={3} value={row.imagePrompt} />
-                      {needsSceneOne ? <small>Can tao anh canh 1 thanh cong truoc.</small> : null}
-                      {row.imageDirty ? <small>Anh nay cu vi canh 1 da regenerate.</small> : null}
-                    </label>
+                  <div className={styles.sceneBlocks}>
+                    <section className={styles.promptCell} aria-label={`Scene ${index + 1} image prompt`}>
+                      <span className={styles.blockTitle}>Image prompt</span>
+                      <textarea onChange={(event) => updateRow(row.id, { imagePrompt: event.target.value })} rows={5} value={row.imagePrompt} />
+                      {needsSceneOne ? <small>Can tao anh Scene 1 thanh cong truoc.</small> : null}
+                      {row.imageDirty ? <small>Anh nay cu vi Scene 1 da regenerate.</small> : null}
+                      <ReferenceUploader
+                        disabled={hasUploadingReferences}
+                        compact
+                        onFiles={(files) => void handleReferenceFiles(row.id, files)}
+                        onRemove={(referenceId) => removeReference(row.id, referenceId)}
+                        references={row.referenceImages}
+                      />
+                    </section>
 
-                    <ReferenceUploader
-                      disabled={hasUploadingReferences}
-                      onFiles={(files) => void handleReferenceFiles(row.id, files)}
-                      onRemove={(referenceId) => removeReference(row.id, referenceId)}
-                      references={row.referenceImages}
-                    />
-                  </section>
+                    <section className={styles.resultBlock} aria-label={`Scene ${index + 1} image result`}>
+                      <span className={styles.blockTitle}>Image result</span>
+                      <MediaResult errorMessage={row.imageErrorMessage} mediaType="image" resultUrl={row.imageResultUrl} status={row.imageStatus} />
+                    </section>
 
-                  <section className={styles.pipelineCard} data-state={imageResultState} data-step="result">
-                    <StepHeader label="Image result" number={2} state={imageResultState} />
-                    <MediaResult errorMessage={row.imageErrorMessage} mediaType="image" resultUrl={row.imageResultUrl} status={row.imageStatus} />
-                  </section>
-
-                  <section className={styles.pipelineCard} data-state={videoPromptState} data-step="input">
-                    <StepHeader label="Video prompt" number={3} state={videoPromptState} />
-                    <label className={styles.cellField}>
+                    <section className={styles.promptCell} aria-label={`Scene ${index + 1} video prompt`}>
+                      <span className={styles.blockTitle}>Video prompt</span>
                       <textarea
                         onChange={(event) => updateRow(row.id, { videoPrompt: event.target.value })}
                         placeholder="Motion, camera, action..."
-                        rows={3}
+                        rows={5}
                         value={row.videoPrompt}
                       />
-                      {row.imageStatus !== "success" ? <small>Tao anh thanh cong truoc khi tao video.</small> : null}
-                    </label>
-                  </section>
+                    </section>
 
-                  <section className={styles.pipelineCard} data-state={videoResultState} data-step="result">
-                    <StepHeader label="Video result" number={4} state={videoResultState} />
-                    <MediaResult errorMessage={row.videoErrorMessage} mediaType="video" resultUrl={row.videoResultUrl} status={row.videoStatus} />
-                  </section>
-                </div>
-              </article>
-            );
-          })}
-          <VideoResultsPanel videos={successfulVideos} />
+                    <section className={styles.resultBlock} aria-label={`Scene ${index + 1} video result`}>
+                      <span className={styles.blockTitle}>Video result</span>
+                      <MediaResult errorMessage={row.videoErrorMessage} mediaType="video" resultUrl={row.videoResultUrl} status={row.videoStatus} />
+                    </section>
+                  </div>
+                </article>
+              );
+              })}
+            </div>
+          ) : (
+            <section className={styles.emptyStoryboard} aria-label="Empty storyboard">
+              <div className={styles.emptyStoryboardIcon}>
+                <AppsIcon name="file" />
+              </div>
+              <div>
+                <p className={styles.eyebrow}>STORYBOARD</p>
+                <h2>Chua co canh nao</h2>
+                <p>Nhap kich ban de tao nhieu canh, hoac them mot canh trong bang.</p>
+              </div>
+              <div className={styles.emptyStoryboardActions}>
+                <button className={styles.primaryButton} onClick={() => setIsScriptModalOpen(true)} type="button">
+                  Nhap kich ban
+                </button>
+                <button className={styles.secondaryButton} onClick={addScene} type="button">
+                  Them canh
+                </button>
+              </div>
+            </section>
+          )}
+          {resolvedRows.length || successfulVideos.length ? <VideoResultsPanel videos={successfulVideos} /> : null}
         </div>
       </section>
+
+      {isScriptModalOpen ? (
+        <div className={styles.modalBackdrop} role="presentation" onClick={() => setIsScriptModalOpen(false)}>
+          <section aria-label="Nhap kich ban" aria-modal="true" className={styles.scriptModal} onClick={(event) => event.stopPropagation()} role="dialog">
+            <header className={styles.scriptModalHeader}>
+              <div>
+                <p className={styles.eyebrow}>SCRIPT</p>
+                <h2>Nhap kich ban</h2>
+              </div>
+              <button aria-label="Close script modal" className={styles.iconButton} onClick={() => setIsScriptModalOpen(false)} type="button">
+                x
+              </button>
+            </header>
+            <label className={styles.scriptModalField}>
+              <span>Dan kich ban moi dong mot canh, hoac dan JSON co production_data</span>
+              <textarea
+                onChange={(event) => setScriptDraft(event.target.value)}
+                placeholder={"Scene 1...\nScene 2...\n\nHoac JSON:\n{\n  \"production_data\": [\n    {\n      \"scene_id\": 1,\n      \"banana_2_image_prompt\": \"...\",\n      \"voiceover_vn\": \"...\",\n      \"motion_instruction\": \"...\"\n    }\n  ]\n}"}
+                rows={10}
+                value={scriptDraft}
+              />
+            </label>
+            {scriptErrorMessage ? <p className={styles.scriptError}>{scriptErrorMessage}</p> : null}
+            <div className={styles.scriptModalActions}>
+              <button className={styles.secondaryButton} onClick={() => setIsScriptModalOpen(false)} type="button">
+                Huy
+              </button>
+              <button className={styles.primaryButton} onClick={buildRowsFromScript} type="button">
+                Tach thanh canh
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -624,29 +872,21 @@ function VideoResultsPanel({ videos }: { videos: GenerationJob[] }) {
   );
 }
 
-function StepHeader({ label, number, state }: { label: string; number: number; state: string }) {
-  return (
-    <div className={styles.stepHeader}>
-      <span className={styles.stepNumber}>{number}</span>
-      <strong>{label}</strong>
-      <em data-state={state}>{getStepStateLabel(state)}</em>
-    </div>
-  );
-}
-
 function ReferenceUploader({
+  compact = false,
   disabled,
   onFiles,
   onRemove,
   references
 }: {
+  compact?: boolean;
   disabled: boolean;
   onFiles: (files: FileList | null) => void;
   onRemove: (referenceId: string) => void;
   references: ReferenceImage[];
 }) {
   return (
-    <div className={styles.referencesCell}>
+    <div className={styles.referencesCell} data-compact={compact ? "true" : "false"}>
       <label className={styles.referenceUploadButton}>
         <input
           accept="image/jpeg,image/png,image/webp"
@@ -660,9 +900,9 @@ function ReferenceUploader({
         />
         <span>Add reference</span>
       </label>
-      <div className={styles.referenceList}>
-        {references.length ? (
-          references.map((reference) => (
+      {references.length ? (
+        <div className={styles.referenceList}>
+          {references.map((reference) => (
             <div className={styles.referenceThumb} data-status={reference.status} key={reference.id}>
               {reference.previewUrl ? <img alt={reference.fileName} src={reference.previewUrl} /> : <AppsIcon name="image" />}
               <span>{reference.status === "uploading" ? "Uploading" : reference.fileName}</span>
@@ -671,12 +911,10 @@ function ReferenceUploader({
                 x
               </button>
             </div>
-          ))
-        ) : (
-          <p>No references</p>
-        )}
-      </div>
-      <small>{references.length}/8 references</small>
+          ))}
+        </div>
+      ) : null}
+      {references.length ? <small>{references.length}/8 refs</small> : null}
     </div>
   );
 }
