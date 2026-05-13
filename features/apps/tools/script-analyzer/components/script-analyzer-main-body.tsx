@@ -77,12 +77,12 @@ function normalizeSceneStatus(status: string | null | undefined): SceneStatus {
 }
 
 function getStatusLabel(status: SceneStatus) {
-  if (status === "creating") return "Dang gui yeu cau...";
-  if (status === "queued") return "Dang cho xu ly...";
-  if (status === "processing" || status === "progress") return "Dang tao...";
-  if (status === "failed") return "Failed";
-  if (status === "success") return "Done";
-  return "Ready";
+  if (status === "creating") return "Đang gửi yêu cầu...";
+  if (status === "queued") return "Đang chờ xử lý...";
+  if (status === "processing" || status === "progress") return "Đang tạo...";
+  if (status === "failed") return "Lỗi";
+  if (status === "success") return "Hoàn tất";
+  return "Sẵn sàng";
 }
 
 function createEmptyScene(): ScenarioSceneRow {
@@ -150,7 +150,7 @@ function buildRowsFromProductionJson(text: string) {
   const parsed = JSON.parse(text) as { production_data?: unknown };
 
   if (!Array.isArray(parsed.production_data)) {
-    throw new Error("JSON thieu production_data");
+    throw new Error("JSON thiếu trường production_data");
   }
 
   const rows = (parsed.production_data as ProductionSceneInput[])
@@ -160,7 +160,7 @@ function buildRowsFromProductionJson(text: string) {
     .filter((row) => row.imagePrompt.trim() || row.videoPrompt.trim());
 
   if (!rows.length) {
-    throw new Error("Khong tim thay prompt trong JSON");
+    throw new Error("Không tìm thấy prompt trong JSON");
   }
 
   return rows;
@@ -248,6 +248,12 @@ export function ScriptAnalyzerMainBody() {
     setRows((items) => [...items, createEmptyScene()]);
   }
 
+  function openScriptModal() {
+    setScriptDraft("");
+    setScriptErrorMessage("");
+    setIsScriptModalOpen(true);
+  }
+
   function removeScene(rowId: string) {
     setRows((items) => items.filter((item) => item.id !== rowId));
     setPendingSequentialRowIds((items) => items.filter((item) => item !== rowId));
@@ -257,7 +263,7 @@ export function ScriptAnalyzerMainBody() {
     const input = scriptDraft.trim();
 
     if (!input) {
-      setScriptErrorMessage("Nhap text hoac JSON truoc khi tach canh");
+      setScriptErrorMessage("Nhập text hoặc JSON trước khi tách cảnh");
       return;
     }
 
@@ -267,7 +273,7 @@ export function ScriptAnalyzerMainBody() {
       nextRows = input.startsWith("{") || input.startsWith("[") ? buildRowsFromProductionJson(input) : buildRowsFromPlainText(input);
     } catch (error) {
       if (input.startsWith("{") || input.startsWith("[")) {
-        setScriptErrorMessage(error instanceof Error ? error.message : "JSON khong hop le");
+        setScriptErrorMessage(error instanceof Error ? error.message : "JSON không hợp lệ");
         return;
       }
 
@@ -275,7 +281,11 @@ export function ScriptAnalyzerMainBody() {
     }
 
     if (nextRows.length) {
-      setRows((items) => [...items, ...nextRows]);
+      batchRunningRef.current = false;
+      setPendingSequentialRowIds([]);
+      setBatchActiveSceneIds([]);
+      setIsBatchRunning(false);
+      setRows(nextRows);
       setScriptDraft("");
       setScriptErrorMessage("");
       setIsScriptModalOpen(false);
@@ -316,7 +326,7 @@ export function ScriptAnalyzerMainBody() {
     const filesToUpload = selectedFiles.slice(0, remainingSlots);
 
     if (!filesToUpload.length) {
-      updateRow(rowId, { imageErrorMessage: "Moi canh chi toi da 8 anh tham chieu" });
+      updateRow(rowId, { imageErrorMessage: "Mỗi cảnh chỉ tối đa 8 ảnh tham chiếu" });
       return;
     }
 
@@ -425,7 +435,7 @@ export function ScriptAnalyzerMainBody() {
 
     if (rowIndex > 0 && !canUseSceneOneReference(resolvedRowsRef.current[0] ?? sceneOne)) {
       updateRow(row.id, {
-        imageErrorMessage: "Can tao thanh cong anh canh 1 truoc de lam reference chinh"
+        imageErrorMessage: "Cần tạo thành công ảnh cảnh 1 trước để làm reference chính"
       });
       return false;
     }
@@ -517,7 +527,7 @@ export function ScriptAnalyzerMainBody() {
       const row = getCurrentRow(rowId);
 
       if (!row) {
-        throw new Error("Scene khong con ton tai");
+        throw new Error("Cảnh không còn tồn tại");
       }
 
       if (row.imageStatus === "success" && row.imageResultUrl) {
@@ -538,14 +548,14 @@ export function ScriptAnalyzerMainBody() {
     const firstRow = resolvedRowsRef.current[0];
 
     if (!firstRow?.imagePrompt.trim()) {
-      throw new Error("Scene 1 can co Image prompt");
+      throw new Error("Scene 1 cần có prompt ảnh");
     }
 
     for (let retry = 0; retry <= batchRetryLimit; retry += 1) {
       const latestRow = getCurrentRow(firstRow.id);
 
       if (!latestRow) {
-        throw new Error("Scene 1 khong con ton tai");
+        throw new Error("Scene 1 không còn tồn tại");
       }
 
       if (latestRow.imageStatus === "success" && latestRow.imageResultUrl) {
@@ -558,7 +568,7 @@ export function ScriptAnalyzerMainBody() {
         const started = await createImageForRow(latestRow, 0);
 
         if (!started) {
-          throw new Error(latestRow.imageErrorMessage || "Khong the tao anh Scene 1");
+          throw new Error(latestRow.imageErrorMessage || "Không thể tạo ảnh Scene 1");
         }
       }
 
@@ -652,7 +662,7 @@ export function ScriptAnalyzerMainBody() {
         await wait(900);
       }
     } catch (error) {
-      console.error(error instanceof Error ? error.message : "Tao tat ca phan canh bi loi");
+      console.error(error instanceof Error ? error.message : "Tạo tất cả phân cảnh bị lỗi");
     } finally {
       batchRunningRef.current = false;
       setIsBatchRunning(false);
@@ -678,18 +688,25 @@ export function ScriptAnalyzerMainBody() {
   }
 
   return (
-    <section className={styles.storyboardPage} aria-label="Storyboard generator">
+    <section className={styles.storyboardPage} aria-label="Phân tích kịch bản">
       <section aria-label="Storyboard workspace" className={styles.storyboardModal}>
         <header className={styles.storyboardHeader}>
-          <button className={styles.secondaryButton} onClick={() => setIsScriptModalOpen(true)} type="button">
-            Nhap kich ban
-          </button>
-          <button className={styles.primaryButton} disabled={!canRunAllScenes} onClick={() => void handleRunAllScenes()} type="button">
-            {isBatchRunning ? "Dang tao..." : "Tao tat ca"}
-          </button>
-          <button className={styles.secondaryButton} onClick={addScene} type="button">
-            Them canh
-          </button>
+          <div className={styles.headerCopy}>
+            <p className={styles.eyebrow}>SCRIPT ANALYZER</p>
+            <h1>Phân tích kịch bản</h1>
+            <p>Tách kịch bản thành cảnh, chuẩn bị prompt ảnh/video và tạo nội dung thử nghiệm theo từng bước.</p>
+          </div>
+          <div className={styles.headerActions}>
+            <button className={styles.secondaryButton} onClick={openScriptModal} type="button">
+              Nhập kịch bản
+            </button>
+            <button className={styles.primaryButton} disabled={!canRunAllScenes} onClick={() => void handleRunAllScenes()} type="button">
+              {isBatchRunning ? "Đang tạo..." : "Tạo tất cả"}
+            </button>
+            <button className={styles.secondaryButton} onClick={addScene} type="button">
+              Thêm cảnh
+            </button>
+          </div>
         </header>
 
         <div className={styles.storyboardTable} aria-label="Scenario scenes">
@@ -708,7 +725,6 @@ export function ScriptAnalyzerMainBody() {
                 !isGenerationActive(row.videoStatus) &&
                 !hasUploadingReferences &&
                 !needsSceneOne;
-
               return (
                 <article
                   className={styles.storyboardRow}
@@ -719,30 +735,29 @@ export function ScriptAnalyzerMainBody() {
                   <header className={styles.sceneStripHeader}>
                     <div className={styles.sceneCell}>
                       <strong>{row.sourceSceneId ? `S${row.sourceSceneId}` : `S${index + 1}`}</strong>
-                      {index === 0 ? <span>Main ref</span> : <span>Ref S1</span>}
+                      {index === 0 ? <span>Ref chính</span> : <span>Dùng S1</span>}
                       {row.imageDirty ? <em>Outdated</em> : null}
                       {row.timingRange ? <small>{row.timingRange}</small> : null}
                       {row.title ? <small>{row.title}</small> : null}
                     </div>
                     <div className={styles.rowActions}>
                       <button className={styles.primaryButton} disabled={isRowRunning || !canCreateImage} onClick={() => void createImageForRow(row, index)} type="button">
-                        Tao anh
+                        Tạo ảnh
                       </button>
                       <button className={styles.secondaryButton} disabled={isRowRunning || !canRunSequential} onClick={() => void handleSequential(row, index)} type="button">
-                        Anh -&gt; video
+                        Ảnh -&gt; Video
                       </button>
-                      <button aria-label={`Remove scene ${index + 1}`} className={styles.iconButton} onClick={() => removeScene(row.id)} type="button">
+                      <button aria-label={`Xoá cảnh ${index + 1}`} className={styles.iconButton} onClick={() => removeScene(row.id)} type="button">
                         x
                       </button>
                     </div>
                   </header>
 
                   <div className={styles.sceneBlocks}>
-                    <section className={styles.promptCell} aria-label={`Scene ${index + 1} image prompt`}>
-                      <span className={styles.blockTitle}>Image prompt</span>
+                    <section className={styles.promptCell} aria-label={`Prompt ảnh cảnh ${index + 1}`}>
+                      <span className={styles.blockTitle}>Prompt ảnh</span>
                       <textarea onChange={(event) => updateRow(row.id, { imagePrompt: event.target.value })} rows={5} value={row.imagePrompt} />
-                      {needsSceneOne ? <small>Can tao anh Scene 1 thanh cong truoc.</small> : null}
-                      {row.imageDirty ? <small>Anh nay cu vi Scene 1 da regenerate.</small> : null}
+                      {row.imageDirty ? <small>Cần tạo lại vì Scene 1 đã được tạo mới.</small> : null}
                       <ReferenceUploader
                         disabled={hasUploadingReferences}
                         compact
@@ -752,13 +767,13 @@ export function ScriptAnalyzerMainBody() {
                       />
                     </section>
 
-                    <section className={styles.resultBlock} aria-label={`Scene ${index + 1} image result`}>
-                      <span className={styles.blockTitle}>Image result</span>
+                    <section className={styles.resultBlock} aria-label={`Ảnh kết quả cảnh ${index + 1}`}>
+                      <span className={styles.blockTitle}>Ảnh kết quả</span>
                       <MediaResult errorMessage={row.imageErrorMessage} mediaType="image" resultUrl={row.imageResultUrl} status={row.imageStatus} />
                     </section>
 
-                    <section className={styles.promptCell} aria-label={`Scene ${index + 1} video prompt`}>
-                      <span className={styles.blockTitle}>Video prompt</span>
+                    <section className={styles.promptCell} aria-label={`Prompt video cảnh ${index + 1}`}>
+                      <span className={styles.blockTitle}>Prompt video</span>
                       <textarea
                         onChange={(event) => updateRow(row.id, { videoPrompt: event.target.value })}
                         placeholder="Motion, camera, action..."
@@ -767,8 +782,8 @@ export function ScriptAnalyzerMainBody() {
                       />
                     </section>
 
-                    <section className={styles.resultBlock} aria-label={`Scene ${index + 1} video result`}>
-                      <span className={styles.blockTitle}>Video result</span>
+                    <section className={styles.resultBlock} aria-label={`Video kết quả cảnh ${index + 1}`}>
+                      <span className={styles.blockTitle}>Video kết quả</span>
                       <MediaResult errorMessage={row.videoErrorMessage} mediaType="video" resultUrl={row.videoResultUrl} status={row.videoStatus} />
                     </section>
                   </div>
@@ -783,15 +798,15 @@ export function ScriptAnalyzerMainBody() {
               </div>
               <div>
                 <p className={styles.eyebrow}>STORYBOARD</p>
-                <h2>Chua co canh nao</h2>
-                <p>Nhap kich ban de tao nhieu canh, hoac them mot canh trong bang.</p>
+                <h2>Chưa có cảnh nào</h2>
+                <p>Nhập kịch bản theo từng dòng hoặc dán JSON production_data để tạo danh sách cảnh mới.</p>
               </div>
               <div className={styles.emptyStoryboardActions}>
-                <button className={styles.primaryButton} onClick={() => setIsScriptModalOpen(true)} type="button">
-                  Nhap kich ban
+                <button className={styles.primaryButton} onClick={openScriptModal} type="button">
+                  Nhập kịch bản
                 </button>
                 <button className={styles.secondaryButton} onClick={addScene} type="button">
-                  Them canh
+                  Thêm cảnh thủ công
                 </button>
               </div>
             </section>
@@ -802,21 +817,22 @@ export function ScriptAnalyzerMainBody() {
 
       {isScriptModalOpen ? (
         <div className={styles.modalBackdrop} role="presentation" onClick={() => setIsScriptModalOpen(false)}>
-          <section aria-label="Nhap kich ban" aria-modal="true" className={styles.scriptModal} onClick={(event) => event.stopPropagation()} role="dialog">
+          <section aria-label="Nhập kịch bản" aria-modal="true" className={styles.scriptModal} onClick={(event) => event.stopPropagation()} role="dialog">
             <header className={styles.scriptModalHeader}>
               <div>
                 <p className={styles.eyebrow}>SCRIPT</p>
-                <h2>Nhap kich ban</h2>
+                <h2>Nhập kịch bản hoặc production JSON</h2>
+                <p>Mỗi dòng sẽ thành một cảnh. Nếu dán JSON, hệ thống đọc trường production_data.</p>
               </div>
-              <button aria-label="Close script modal" className={styles.iconButton} onClick={() => setIsScriptModalOpen(false)} type="button">
+              <button aria-label="Đóng modal nhập kịch bản" className={styles.iconButton} onClick={() => setIsScriptModalOpen(false)} type="button">
                 x
               </button>
             </header>
             <label className={styles.scriptModalField}>
-              <span>Dan kich ban moi dong mot canh, hoac dan JSON co production_data</span>
+              <span>Dán kịch bản mới. Nội dung này sẽ thay thế danh sách cảnh hiện tại.</span>
               <textarea
                 onChange={(event) => setScriptDraft(event.target.value)}
-                placeholder={"Scene 1...\nScene 2...\n\nHoac JSON:\n{\n  \"production_data\": [\n    {\n      \"scene_id\": 1,\n      \"banana_2_image_prompt\": \"...\",\n      \"voiceover_vn\": \"...\",\n      \"motion_instruction\": \"...\"\n    }\n  ]\n}"}
+                placeholder={"Cảnh 1: ...\nCảnh 2: ...\n\nHoặc JSON:\n{\n  \"production_data\": [\n    {\n      \"scene_id\": 1,\n      \"banana_2_image_prompt\": \"...\",\n      \"voiceover_vn\": \"...\",\n      \"motion_instruction\": \"...\"\n    }\n  ]\n}"}
                 rows={10}
                 value={scriptDraft}
               />
@@ -824,10 +840,10 @@ export function ScriptAnalyzerMainBody() {
             {scriptErrorMessage ? <p className={styles.scriptError}>{scriptErrorMessage}</p> : null}
             <div className={styles.scriptModalActions}>
               <button className={styles.secondaryButton} onClick={() => setIsScriptModalOpen(false)} type="button">
-                Huy
+                Huỷ
               </button>
-              <button className={styles.primaryButton} onClick={buildRowsFromScript} type="button">
-                Tach thanh canh
+              <button className={styles.primaryButton} disabled={!scriptDraft.trim()} onClick={buildRowsFromScript} type="button">
+                Thay thế cảnh hiện tại
               </button>
             </div>
           </section>
@@ -839,11 +855,11 @@ export function ScriptAnalyzerMainBody() {
 
 function VideoResultsPanel({ videos }: { videos: GenerationJob[] }) {
   return (
-    <section className={styles.videoResultsPanel} aria-label="Generated videos">
+    <section className={styles.videoResultsPanel} aria-label="Video đã tạo">
       <div className={styles.videoResultsHeader}>
         <div>
-          <p className={styles.eyebrow}>VIDEO DA TAO</p>
-          <h3>{videos.length} video thanh cong</h3>
+          <p className={styles.eyebrow}>VIDEO ĐÃ TẠO</p>
+          <h3>{videos.length} video hoàn tất</h3>
         </div>
       </div>
       {videos.length ? (
@@ -852,13 +868,13 @@ function VideoResultsPanel({ videos }: { videos: GenerationJob[] }) {
             <article className={styles.videoResultCompactCard} key={video.id}>
               <video controls src={video.resultUrl ?? ""} />
               <div>
-                <strong>{video.prompt ?? "Generated video"}</strong>
+                <strong>{video.prompt ?? "Video đã tạo"}</strong>
                 <div className={styles.videoActions}>
                   <a href={video.resultUrl ?? ""} rel="noreferrer" target="_blank">
-                    Open
+                    Mở
                   </a>
                   <a download href={video.resultUrl ?? ""} rel="noreferrer" target="_blank">
-                    Download
+                    Tải xuống
                   </a>
                 </div>
               </div>
@@ -868,7 +884,7 @@ function VideoResultsPanel({ videos }: { videos: GenerationJob[] }) {
       ) : (
         <div className={styles.emptyVideoInline}>
           <AppsIcon name="video" />
-          <span>Video success co resultUrl se hien tai day.</span>
+          <span>Video hoàn tất có resultUrl sẽ hiển thị tại đây.</span>
         </div>
       )}
     </section>
@@ -901,16 +917,16 @@ function ReferenceUploader({
           }}
           type="file"
         />
-        <span>Add reference</span>
+        <span>Thêm reference</span>
       </label>
       {references.length ? (
         <div className={styles.referenceList}>
           {references.map((reference) => (
             <div className={styles.referenceThumb} data-status={reference.status} key={reference.id}>
               {reference.previewUrl ? <img alt={reference.fileName} src={reference.previewUrl} /> : <AppsIcon name="image" />}
-              <span>{reference.status === "uploading" ? "Uploading" : reference.fileName}</span>
+              <span>{reference.status === "uploading" ? "Đang upload" : reference.fileName}</span>
               {reference.errorMessage ? <small>{reference.errorMessage}</small> : null}
-              <button aria-label={`Remove ${reference.fileName}`} onClick={() => onRemove(reference.id)} type="button">
+              <button aria-label={`Xoá ${reference.fileName}`} onClick={() => onRemove(reference.id)} type="button">
                 x
               </button>
             </div>
@@ -949,19 +965,19 @@ function MediaResult({
       ) : null}
       {isFailed ? (
         <div className={styles.mediaError}>
-          <strong>Failed</strong>
-          <span>{errorMessage ?? "Generation failed"}</span>
+          <strong>Lỗi</strong>
+          <span>{errorMessage ?? "Tạo nội dung thất bại"}</span>
         </div>
       ) : null}
       {!isPending && !isFailed && !isSuccess ? (
         <div className={styles.mediaEmpty}>
           <AppsIcon name={mediaType} />
-          <span>{mediaType === "image" ? "No image" : "No video"}</span>
+          <span>{mediaType === "image" ? "Chưa có ảnh" : "Chưa có video"}</span>
         </div>
       ) : null}
       {isSuccess && resultUrl ? (
         <a className={styles.openMediaLink} href={resultUrl} rel="noreferrer" target="_blank">
-          Open
+          Mở
         </a>
       ) : null}
     </div>

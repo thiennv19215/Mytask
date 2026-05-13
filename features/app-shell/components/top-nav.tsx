@@ -10,9 +10,16 @@ function isActivePath(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function getActiveTopNavKey(pathname: string) {
+  return [...topNavItems]
+    .sort((firstItem, secondItem) => secondItem.href.length - firstItem.href.length)
+    .find((item) => isActivePath(pathname, item.href))?.key;
+}
+
 export function TopNav() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const activeTopNavKey = getActiveTopNavKey(pathname);
 
   return (
     <header className={styles.topNav}>
@@ -36,7 +43,7 @@ export function TopNav() {
       >
         {topNavItems.map((item) => (
           <Link
-            className={`${styles.topLink} ${isActivePath(pathname, item.href) ? styles.topLinkActive : ""}`}
+            className={`${styles.topLink} ${activeTopNavKey === item.key ? styles.topLinkActive : ""}`}
             href={item.href}
             key={item.key}
             onClick={() => setIsMobileMenuOpen(false)}

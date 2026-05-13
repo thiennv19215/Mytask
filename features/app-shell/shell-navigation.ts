@@ -1,5 +1,11 @@
 import type { NavItem } from "@/shared/types/navigation";
 
+export type TopNavItem = {
+  key: NavItem["key"] | "imageGenerator" | "videoGenerator";
+  label: string;
+  href: string;
+};
+
 export const navItems: NavItem[] = [
   { key: "home", label: "Trang chủ", href: "/", icon: "home" },
   { key: "tools", label: "Ứng dụng AI", href: "/apps", icon: "card" },
@@ -10,9 +16,11 @@ export const navItems: NavItem[] = [
   { key: "about", label: "Giới thiệu", href: "/about", icon: "info" }
 ];
 
-export const topNavItems: Array<Pick<NavItem, "key" | "label" | "href">> = [
+export const topNavItems: TopNavItem[] = [
   { key: "home", label: "Trang chủ", href: "/" },
   { key: "tools", label: "Ứng dụng AI", href: "/apps" },
+  { key: "imageGenerator", label: "Tạo ảnh AI", href: "/apps/image-generator" },
+  { key: "videoGenerator", label: "Tạo video AI", href: "/apps/video-generator" },
   { key: "resources", label: "Tài nguyên", href: "/resources" },
   { key: "chatbotPrompt", label: "Chatbot", href: "/chatbot" },
   { key: "pricing", label: "Bảng giá", href: "/pricing" }

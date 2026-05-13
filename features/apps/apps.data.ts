@@ -56,7 +56,7 @@ export const appsTools: AppsTool[] = [
   },
   {
     title: "Phân tích kịch bản",
-    description: "Chấm điểm hook, cấu trúc, nhịp kể, CTA và tạo gợi ý tối ưu trước khi làm video.",
+    description: "Tách cảnh, chuẩn bị prompt ảnh/video và tạo nội dung thử nghiệm trước khi dựng video.",
     href: "/apps/script-analyzer",
     category: "content",
     status: "beta",
