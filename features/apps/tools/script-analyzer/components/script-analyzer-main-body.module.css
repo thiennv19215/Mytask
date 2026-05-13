@@ -4,21 +4,21 @@
   gap: 12px;
   margin: -58px -52px -72px;
   min-height: calc(100vh - var(--app-top-nav-height, 78px));
-  padding: 16px;
+  padding: 18px;
 }
 
 .storyboardModal {
   background: #ffffff;
   border: 1px solid rgba(0, 27, 68, 0.08);
-  border-radius: 16px;
+  border-radius: 14px;
   box-shadow: 0 12px 32px rgba(0, 27, 68, 0.05);
   display: grid;
-  gap: 10px;
+  gap: 12px;
   grid-template-rows: auto 1fr;
   max-width: 1760px;
   min-width: 0;
   overflow: hidden;
-  padding: 10px;
+  padding: 14px;
   width: min(100%, 1760px);
 }
 
@@ -193,12 +193,40 @@
 }
 
 .storyboardHeader {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.headerCopy {
+  display: grid;
+  gap: 6px;
+  max-width: 720px;
+  min-width: 260px;
+}
+
+.headerCopy h1 {
+  color: var(--navy);
+  font: 900 28px/1.08 Manrope, sans-serif;
+  margin: 0;
+}
+
+.headerCopy p {
+  color: var(--muted);
+  font: 800 14px/1.5 Inter, sans-serif;
+  margin: 0;
+}
+
+.headerActions {
   align-items: center;
   display: flex;
+  flex: 1 1 360px;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
-  min-width: 0;
 }
 
 .rowActions small,
@@ -298,6 +326,7 @@
   gap: 8px;
   justify-content: space-between;
   min-width: 0;
+  position: relative;
 }
 
 .sceneBlocks {
@@ -476,6 +505,13 @@
   justify-content: space-between;
 }
 
+.scriptModalHeader p {
+  color: var(--muted);
+  font: 800 13px/1.45 Inter, sans-serif;
+  margin: 8px 0 0;
+  max-width: 540px;
+}
+
 .scriptModalHeader h2 {
   color: var(--navy);
   font: 900 22px/1.1 Manrope, sans-serif;
@@ -554,6 +590,12 @@
   min-height: 32px;
   overflow: hidden;
   position: relative;
+}
+
+.referenceUploadButton:has(input:disabled) {
+  background: #e2e8f0;
+  color: #8a9ab4;
+  cursor: not-allowed;
 }
 
 .referenceUploadButton input {
@@ -736,6 +778,10 @@
   .sceneBlocks {
     grid-template-columns: repeat(2, minmax(220px, 1fr));
   }
+
+  .headerActions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 760px) {
@@ -758,7 +804,20 @@
     justify-content: stretch;
   }
 
-  .storyboardHeader button {
+  .headerCopy {
+    min-width: 0;
+  }
+
+  .headerCopy h1 {
+    font-size: 24px;
+  }
+
+  .headerActions {
+    flex: 1 1 100%;
+    justify-content: stretch;
+  }
+
+  .headerActions button {
     flex: 1 1 120px;
     min-width: 0;
   }

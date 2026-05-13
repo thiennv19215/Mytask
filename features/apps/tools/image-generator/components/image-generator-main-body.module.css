@@ -2,10 +2,10 @@
   background: var(--surface-soft);
   display: flex;
   flex-direction: column;
-  margin: -58px -52px -72px;
+  margin: -42px -52px -72px;
   min-height: calc(100vh - var(--app-top-nav-height, 78px));
   overflow: hidden;
-  padding: 0;
+  padding: 16px 22px 0;
   position: relative;
 }
 
@@ -16,9 +16,9 @@
   grid-auto-flow: dense;
   grid-template-columns: repeat(auto-fill, minmax(176px, 1fr));
   height: 100%;
-  min-height: calc(100vh - var(--app-top-nav-height, 78px));
+  min-height: calc(100vh - var(--app-top-nav-height, 78px) - 16px);
   overflow: auto;
-  padding: 12px 12px 142px;
+  padding: 0 0 142px;
 }
 
 .galleryTile {
@@ -744,12 +744,12 @@
 @media (max-width: 1100px) {
   .imageToolBody {
     margin-inline: -36px;
+    padding-inline: 18px;
   }
 
   .imageGallery {
     gap: 10px;
     grid-template-columns: repeat(auto-fill, minmax(164px, 1fr));
-    padding-inline: 10px;
   }
 
   .promptComposer {
@@ -766,15 +766,16 @@
 
 @media (max-width: 760px) {
   .imageToolBody {
-    margin: -44px -20px -72px;
+    margin: -32px -20px -72px;
     min-height: calc(100vh - 82px);
+    padding: 12px 10px 0;
   }
 
   .imageGallery {
     gap: 8px;
     grid-template-columns: repeat(2, minmax(132px, 1fr));
     min-height: calc(100vh - 82px);
-    padding: 8px 8px 204px;
+    padding: 10px 10px 204px;
   }
 
   .promptComposer {
