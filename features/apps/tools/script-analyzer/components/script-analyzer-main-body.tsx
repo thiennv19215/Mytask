@@ -866,7 +866,7 @@ function VideoResultsPanel({ videos }: { videos: GenerationJob[] }) {
         <div className={styles.videoResultStrip}>
           {videos.map((video) => (
             <article className={styles.videoResultCompactCard} key={video.id}>
-              <video controls src={video.resultUrl ?? ""} />
+              <video controls preload="none" src={video.resultUrl ?? ""} />
               <div>
                 <strong>{video.prompt ?? "Video đã tạo"}</strong>
                 <div className={styles.videoActions}>
@@ -956,7 +956,7 @@ function MediaResult({
   return (
     <div className={styles.mediaCell} data-status={status}>
       {isSuccess && mediaType === "image" ? <img alt="Generated scene" src={resultUrl} /> : null}
-      {isSuccess && mediaType === "video" ? <video controls src={resultUrl} /> : null}
+      {isSuccess && mediaType === "video" ? <video controls preload="none" src={resultUrl} /> : null}
       {isPending ? (
         <div className={styles.mediaLoading} role="status">
           <span />

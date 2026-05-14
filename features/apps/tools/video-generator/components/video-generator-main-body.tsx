@@ -417,7 +417,7 @@ export function VideoGeneratorMainBody() {
           <section className={`${styles.videoPreview} ${previewClass}`} aria-label="Video preview">
             <div className={styles.previewScene}>
               {selectedVideo?.resultUrl ? (
-                <video className={styles.generatedVideo} controls src={selectedVideo.resultUrl} />
+                <video className={styles.generatedVideo} controls preload="none" src={selectedVideo.resultUrl} />
               ) : null}
               <div>
                 <strong>{selectedVideo?.prompt ?? "No videos yet"}</strong>
@@ -478,7 +478,7 @@ export function VideoGeneratorMainBody() {
                   type="button"
                 >
                   <div className={styles.historyThumb}>
-                    {video.resultUrl ? <video muted playsInline src={video.resultUrl} /> : <AppsIcon name="video" />}
+                    {video.resultUrl ? <video muted playsInline preload="none" src={video.resultUrl} /> : <AppsIcon name="video" />}
                   </div>
                   <div>
                     <strong>{video.model}</strong>

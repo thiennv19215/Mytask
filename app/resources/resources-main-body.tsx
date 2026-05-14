@@ -326,7 +326,7 @@ export function ResourcesMainBody() {
               {selectedItem.type === "image" ? (
                 <img alt={getTitle(selectedItem)} src={selectedItem.url} />
               ) : (
-                <video autoPlay controls src={selectedItem.url} />
+                <video controls preload="none" src={selectedItem.url} />
               )}
             </div>
 
